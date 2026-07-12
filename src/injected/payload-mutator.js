@@ -348,17 +348,7 @@ export function stripBlocksFromJsonValue(value) {
   return value;
 }
 
-/**
- * Strip previously injected BDS blocks from text to avoid duplication.
- *
- * PRESERVES:
- * - <dsmemory> blocks containing <BDS:memory_calls> (memory context)
- * - <dsmemory> blocks containing <BDS:SKILLS> (skill instructions)
- *
- * STRIPS:
- * - <MEMORY_SYSTEM> blocks (system prompt — always re-injected)
- * - Standalone <BDS:memory_calls> or <BDS:SKILLS> outside dsmemory
- */
+
 export function stripInjectedBlocks(text) {
   let output = String(text || "");
   // Preserve dsmemory blocks that contain memory_calls or skills.

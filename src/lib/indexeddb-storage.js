@@ -1,5 +1,5 @@
 /**
- * IndexedDB storage backend for DeepSeek Memory.
+ * IndexedDB storage backend for DeepSeek Supervisor V2.
  *
  * Provides a robust, transactional storage layer similar to SQLite.
  * Falls back to chrome.storage.local if IndexedDB is unavailable.
