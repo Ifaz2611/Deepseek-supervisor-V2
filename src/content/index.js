@@ -1,17 +1,3 @@
-/**
- * Content script entry point.
- *
- * Responsibilities (memory + skills extension only):
- * - Wait for document.body
- * - Load state from chrome.storage
- * - Inject the MAIN-world hook script
- * - Set up bridge events
- * - Mount Svelte UI
- * - Bind storage change listener
- * - Push config to injected script
- * - Inject the "Memory & Skills" entry into DeepSeek's settings dropdown
- */
-
 import "bds-platform-globals";
 import "../styles/content.css";
 
@@ -33,8 +19,6 @@ if (!window[BOOTSTRAP]) {
 async function init() {
   await waitForBody();
   await loadStateFromStorage();
-
-  // Initialize localization locale
   i18n.init(state.settings.syncLocale ? null : state.settings.locale);
 
   injectHookScript();
@@ -42,20 +26,11 @@ async function init() {
   mountUi();
   bindStorageChangeListener();
   pushConfigToPage();
-
-  // Retry config push to handle race condition with injected script loading.
-  // The injected script requests config on load, but timing can vary.
   setTimeout(() => pushConfigToPage(), 500);
   setTimeout(() => pushConfigToPage(), 1500);
   setTimeout(() => pushConfigToPage(), 3000);
-
-  // Inject a "Memory & Skills" entry into DeepSeek's settings dropdown.
   initSettingsIntegration();
-
-  // Start scanning assistant messages for <BDS:memory_write> tags.
   initMemoryScanner();
-
-  // Live-update: re-push config whenever settings change.
   window.addEventListener("dsm:sc", () => {
     pushConfigToPage();
   });

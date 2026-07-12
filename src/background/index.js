@@ -1,12 +1,3 @@
-/**
- * Background service worker for DeepSeek Memory.
- *
- * Responsibilities:
- * - Handle locale update / locale reset requests.
- * - Fetch remote skill URLs (GitHub READMEs, raw files, etc.)
- *   on behalf of the content script (avoids CORS restrictions).
- */
-
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (!message || !message.type) return false;
 
