@@ -1,0 +1,16 @@
+{
+  "name": "deepseek-memory",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node build.js",
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "sharp": "^0.35.2",
+    "svelte": "^5.28.2",
+    "vite": "^6.3.1"
+  }
+}

@@ -1,0 +1,993 @@
+{
+  "updatedAt": "2026-05-19T00:00:00Z",
+  "messages": {
+    "common": {
+      "save": "Kaydet",
+      "cancel": "İptal",
+      "delete": "Sil",
+      "edit": "Düzenle",
+      "close": "Kapat",
+      "back": "Geri",
+      "export": "Dışa Aktar",
+      "import": "İçe Aktar",
+      "refresh": "Yenile",
+      "download": "İndir",
+      "name": "Ad",
+      "content": "İçerik",
+      "description": "Açıklama",
+      "none": "Hiçbiri",
+      "working": "Çalışıyor..."
+    },
+    "drawer": {
+      "title": "DeepSeek Hafıza",
+      "close": "Kapat",
+      "github": "GitHub",
+      "version": "v{{version}}",
+      "exportAll": "Tüm Verileri Dışa Aktar",
+      "importAll": "Tüm Verileri İçe Aktar",
+      "exportEncrypt": "Parola ile koru (önerilir)",
+      "enterPassword": "Parola girin",
+      "confirmPassword": "Parolayı onayla",
+      "passwordTooShort": "Parola en az 4 karakter olmalıdır.",
+      "passwordMismatch": "Parolalar eşleşmiyor.",
+      "passwordRequired": "Parola gereklidir.",
+      "passwordWrong": "Yanlış parola.",
+      "exportDone": "Veriler başarıyla dışa aktarıldı.",
+      "exportFailed": "Veriler dışa aktarılamadı.",
+      "exporting": "Dışa aktarılıyor...",
+      "importing": "İçe aktarılıyor...",
+      "download": "İndir",
+      "decrypt": "Şifre Çöz",
+      "selectSections": "İçe aktarılacak bölümleri seçin:",
+      "importBtn": "İçe Aktar",
+      "importParseError": "Geçersiz dosya biçimi.",
+      "importDone": "Veriler başarıyla içe aktarıldı.",
+      "importFailed": "Veriler içe aktarılamadı.",
+      "importPasswordPlaceholder": "Dışa aktarma parolasını girin",
+      "sectionSettings": "Ayarlar",
+      "sectionPrompts": "Özel Sistem Yönergeleri",
+      "sectionSkills": "Yetenek Seti",
+      "sectionCharacters": "Rol Yapma Karakterleri",
+      "sectionMemories": "Kayıtlı Bellek",
+      "sectionProjects": "Projeler",
+      "sectionProjectFiles": "Proje Dosyaları",
+      "sectionChatTags": "Sohbet Etiketleri",
+      "sectionSavedItems": "Kaydedilmiş Öğeler"
+    },
+    "settings": {
+      "generalSettings": "Genel Ayarlar",
+      "systemPrompts": "Sistem Yönergeleri (Prompt)",
+      "defaultPromptName": "Varsayılan",
+      "defaultPromptStatus": "Salt okunur çekirdek yönergeler",
+      "customPromptStatus": "Kaydedilmiş özel yönerge",
+      "view": "Görüntüle",
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "addNewPrompt": "Yeni Sistem Yönergesi Ekle",
+      "addNewTitle": "Yeni Yönerge Ekle",
+      "viewTitle": "Yönergeyi Görüntüle",
+      "editTitle": "Yönergeyi Düzenle",
+      "nameLabel": "Ad",
+      "namePlaceholder": "Örn. Özel Kodlama Kurallarım",
+      "contentLabel": "İçerik",
+      "contentPlaceholder": "Sistem yönergeleri buraya...",
+      "baseOnDefault": "Varsayılana Dayandır",
+      "cancel": "İptal",
+      "savePrompt": "Yönergeyi Kaydet",
+      "nameRequired": "Ad ve içerik alanları zorunludur.",
+      "settingsSaved": "Ayarlar kaydedildi.",
+      "advancedSettings": "Gelişmiş Ayarlar",
+      "projectAutoContext": "Proje Otomatik Bağlamı (Yerel RAG)",
+      "processGitignore": "Yükleme sırasında .gitignore kurallarını işlet",
+      "autoDownloadFiles": "create_file çıktılarını otomatik indir",
+      "disableSystemPrompt": "Gizli Sistem Yönergesini Devre Dışı Bırak",
+      "disableMemory": "Kayıtlı Bellek Enjeksiyonunu Devre Dışı Bırak",
+      "disableMemoryHint": "Açıkken kayıtlı anılar isteme eklenmez. Beceriler normal çalışmaya devam eder.",
+      "persistentMemory": "Kalıcı Bellek",
+      "persistentMemoryHint": "Etkinleştirildiğinde, anılarınız her konuşmaya eklenir ve yapay zeka sohbetler arasında sizi hatırlar.",
+      "injectSystemDateTime": "Mesajlara sistem tarih ve saatini ekle",
+      "skipDeletionConfirmation": "Silme onayını atla",
+      "injectionFrequency": "Sistem Yönergesi Enjeksiyon Sıklığı",
+      "firstMessage": "Sadece ilk mesajda",
+      "everyMessage": "Her zaman (her mesajda)",
+      "everyNMessages": "Her N mesajda bir",
+      "injectionInterval": "Enjeksiyon Aralığı (N)",
+      "injectEveryN": "Yönergeyi her {{n}} mesajda bir enjekte et.",
+      "voiceMode": "Ses Modu (Yanıtları otomatik oku)",
+      "autoSubmitVoice": "Konuşma bitince otomatik gönder",
+      "speechLanguage": "Konuşma Dili",
+      "vadSilenceTimeout": "Sessizlik zaman aşımı",
+      "autoDownloadZip": "LONG_WORK zip dosyasını otomatik indir",
+      "preferredLang": "Tercih Edilen Yanıt Dili",
+      "preferredLangPlaceholder": "Örn. Türkçe, İngilizce, Göktürkçe...",
+      "preferredLangHint": "Modelin kendi karar vermesi için boş bırakın.",
+      "markdownMaxDepth": "Markdown Tarayıcı Maks. Derinliği",
+      "markdownMaxDepthHint": "Mesajlardan markdown oluştururken DOM yineleme derinliği üst sınırı. Düşük = derin iç içe geçmiş içeriklerde yığın taşmasına (stack overflow) karşı korur; Yüksek = yapısal bütünlüğü korur. Varsayılan 200.",
+      "chatSessionCap": "Sohbet Geçmişi Listesi Limiti",
+      "chatSessionCapHint": "Kenar çubuğunda bellekte tutulacak maksimum sohbet oturumu sayısı. Sınırı aşan eski oturumlar silinir (FIFO). Düşük değerler uzun süreli sekmelerde bellek kullanımını azaltır. Varsayılan 500.",
+      "githubToken": "GitHub Kişisel Erişim Tokenı (PAT)",
+      "githubTokenPlaceholder": "ghp_...",
+      "githubTokenHelp": "GitHub Ayarları -> Tokens altından repo yetkili klasik bir token oluşturun.",
+      "githubTokenShow": "Göster",
+      "githubTokenHide": "Gizle",
+      "githubTokenClear": "Temizle",
+      "tokenPriceEstimation": "Token Ücret Tahmini (Deneysel)",
+      "tokenPriceHint": "Mesaj başına tahmini DeepSeek API maliyetini ve toplam oturum maliyetini gösterir. Girdi/çıktı token fiyatları kullanılır. Fiyat verileri dinamik olarak çekilir.",
+      "collapseLongUserMessages": "Uzun kullanıcı mesajlarını daralt",
+      "collapseLongUserMessagesHint": "Çok uzun kullanıcı mesajlarını otomatik olarak daraltarak bir buton aracılığıyla tamamının açılmasını sağlar.",
+      "save": "Ayarları Kaydet",
+      "ragChunks": "Enjekte Edilecek Maks. RAG Parçası",
+      "ragChunks3": "3 parça (~600 kelime)",
+      "ragChunks5": "5 parça (~1000 kelime)",
+      "ragChunks8": "8 parça (~1600 kelime)",
+      "ragChunks10": "10 parça (~2000 kelime)",
+      "ragHint": "Proje dosyalarınızdan ilgili bölümleri otomatik olarak bulur ve enjekte eder.",
+      "projectInstructions": "Proje Talimatları",
+      "projectInstructionsPlaceholder": "Bu proje aktif olduğunda genel sistem yönergesine eklenecek özel talimatlar...",
+      "autoSaved": "Otomatik kaydedildi",
+      "languageSettings": "Dil Ayarları",
+      "syncLocale": "Eklenti dilini tarayıcı diliyle senkronize et",
+      "selectLanguage": "Dil",
+      "checkUpdates": "Dil Güncellemelerini Denetle",
+      "resetFactory": "Fabrika Dillerine Sıfırla",
+      "lastChecked": "Son kontrol: {{date}}",
+      "updateAvailable": "Yeni dil güncellemesi mevcut!",
+      "updatedSuccess": "Dil dosyaları başarıyla güncellendi.",
+      "resetSuccess": "Dil dosyaları varsayılan ayarlara sıfırlandı.",
+      "updateFailed": "Dil güncellemeleri denetlenirken hata oluştu.",
+      "unsavedTitle": "Kaydedilmemiş Değişiklikler",
+      "unsavedMessage": "Kaydedilmemiş ayar değişiklikleriniz bulunuyor. Değişiklikleri kaybetmek istediğinizden emin misiniz?",
+      "discard": "Değişiklikleri İptal Et",
+      "keepEditing": "Düzenlemeye Devam Et",
+      "customCSS": "Özel CSS",
+      "customCSSPlaceholder": "/* CSS kodunuzu buraya yapıştırın veya yukarıdan bir hazır şablon seçin */",
+      "multiPromptMode": "Çoklu Sistem Yönergesi Modu (Gelişmiş)",
+      "scheduleType": "Enjeksiyon Planlaması",
+      "cssPresets": "Hazır Şablonlar",
+      "presetNone": "Yok",
+      "presetReducePadding": "Daraltılmış Boşluk",
+      "presetWiderMessages": "Geniş Mesajlar",
+      "presetCompact": "Kompakt Arayüz",
+      "presetBetterCodeFont": "Daha İyi Kod Yazı Tipi",
+      "saveAsSnippet": "Snippet Olarak Kaydet",
+      "manageSnippets": "CSS Snippet'lerini Yönet",
+      "restore": "Geri Yükle",
+      "delete": "Sil",
+      "enterSnippetName": "Snippet ismini girin:",
+      "snippetSaved": "Snippet kaydedildi!",
+      "snippetDeleted": "Snippet silindi",
+      "presetRestored": "Hazır şablon sıfırlandı",
+      "duplicateNameError": "Bu isimde bir snippet zaten var.",
+      "updateSnippet": "Snippet'ı Güncelle",
+      "snippetUpdated": "Snippet güncellendi!",
+      "editingSnippet": "Düzenlenen snippet: {{name}}",
+      "exitEditMode": "Düzenlemeden Çık",
+      "noSnippets": "Henüz CSS snippet'ı yok."
+    },
+    "skillList": {
+      "title": "Yetenek Seti",
+      "export": "Dışa Aktar",
+      "import": "İçe Aktar",
+      "uploadLabel": "Yetenek Yükle (.md)",
+      "empty": "Yetenek yüklenmedi.",
+      "namePlaceholder": "Yetenek Adı",
+      "usagePlaceholder": "Kullanım (örn. typescript, react)",
+      "contentPlaceholder": "Yetenek yönergeleri/tanımlamaları...",
+      "cancel": "İptal",
+      "save": "Kaydet",
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "onlyMdOrJson": "Yetenekler için yalnızca .md ve .json dosyaları desteklenmektedir.",
+      "onlyMd": "Yetenekler için yalnızca .md dosyaları desteklenmektedir.",
+      "loaded": "Yetenek yüklendi: {{name}}",
+      "removed": "Yetenek kaldırıldı.",
+      "saved": "Yetenek kaydedildi.",
+      "importedCount": "{{count}} yetenek içe aktarıldı.",
+      "importFailed": "Yetenekler içe aktarılamadı. Geçersiz dosya biçimi.",
+      "urlLabel": "URL'den içe aktar (GitHub, README vb.)",
+      "urlPlaceholder": "https://github.com/user/repo veya yetenek içeren herhangi bir URL",
+      "urlFetch": "Getir",
+      "urlFetching": "Getiriliyor...",
+      "urlEmpty": "Lütfen bir URL girin.",
+      "urlInvalid": "Lütfen geçerli bir URL girin.",
+      "urlFetchFailed": "URL getirilemedi.",
+      "urlEmptyContent": "URL boş içerik döndürdü.",
+      "urlImported": "Yetenek içe aktarıldı: {{name}}"
+    },
+    "characterList": {
+      "title": "Rol Yapma Karakterleri",
+      "export": "Dışa Aktar",
+      "import": "İçe Aktar",
+      "uploadLabel": "Karakter Yükle (.md)",
+      "defaultOption": "Hiçbiri (Asistan)",
+      "empty": "Kayıtlı karakter bulunmuyor.",
+      "namePlaceholder": "Karakter Adı",
+      "usagePlaceholder": "Kullanım (Örn. eğlence, felsefe)",
+      "contentPlaceholder": "Karakter yönergeleri/arka planı...",
+      "cancel": "İptal",
+      "save": "Kaydet",
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "onlyMdOrJson": "Karakterler için yalnızca .md ve .json dosyaları desteklenmektedir.",
+      "onlyMd": "Karakter yüklemeleri için yalnızca .md dosyaları desteklenmektedir.",
+      "loaded": "Karakter yüklendi: {{name}}",
+      "removed": "Karakter kaldırıldı.",
+      "saved": "Karakter kaydedildi.",
+      "importedCount": "{{count}} karakter içe aktarıldı.",
+      "importFailed": "Karakterler içe aktarılamadı. Geçersiz dosya biçimi."
+    },
+    "memoryList": {
+      "title": "Kayıtlı Bellek",
+      "export": "Dışa Aktar",
+      "import": "İçe Aktar",
+      "empty": "Henüz bellek kaydı bulunmuyor.",
+      "delete": "Sil",
+      "edit": "Düzenle",
+      "editTitle": "Bellek Düzenle",
+      "saved": "Kaydedilen bellek: {{key}}",
+      "importSuccess": "Bellek başarıyla içe aktarıldı.",
+      "importFailed": "İçe aktarma başarısız: JSON formatı hatalı.",
+      "deleted": "Silinen bellek kaydı: {{key}}",
+      "more": "+{{count}} daha"
+    },
+    "memoryImport": {
+      "title": "AI'dan Bellek Aktar",
+      "step1Title": "1. Prompt'u kopyala & başka bir AI'ya yapıştır",
+      "copyPrompt": "Kopyala",
+      "copied": "Kopyalandı!",
+      "step2Title": "2. AI yanıtını aşağıya yapıştırın",
+      "placeholder": "AI yanıtını buraya yapıştırın...",
+      "importButton": "Import & Expert Session Başlat",
+      "importError": "Lütfen önce AI yanıtını yapıştırın."
+    },
+    "projectsManager": {
+      "back": "Geri",
+      "title": "Projeler",
+      "manage": "Projeleri Yönet",
+      "newProject": "+ Yeni Proje",
+      "nameRequired": "Proje adı (zorunlu)",
+      "descriptionOptional": "Açıklama (isteğe bağlı)",
+      "cancel": "İptal",
+      "create": "Oluştur",
+      "empty": "Henüz proje oluşturulmamış.",
+      "nameLabel": "Ad",
+      "descriptionLabel": "Açıklama",
+      "optional": "İsteğe bağlı",
+      "customInstructions": "Özel Talimatlar",
+      "instructionsPlaceholder": "Bu proje aktif olduğunda genel sistem yönergesine eklenecek talimatlar...",
+      "autoSaved": "Otomatik kaydedildi",
+      "files": "Dosyalar",
+      "exportAll": "Hepsini Dışa Aktar",
+      "noFiles": "Henüz dosya eklenmemiş.",
+      "export": "Dışa Aktar",
+      "delete": "Sil",
+      "uploadFile": "+ Dosya Yükle",
+      "uploadFolder": "+ Klasör Yükle",
+      "fileHint": "Sadece düz metin dosyaları. Dosya başına maks 500 KB.",
+      "localDirectory": "Yerel Dizin",
+      "permissionLost": "(izin kayboldu — yeniden bağla)",
+      "refresh": "Yenile",
+      "unlink": "Bağlantıyı Kes",
+      "linkDirectory": "+ Yerel Dizini Bağla",
+      "selectingDir": "Dizin seçiliyor...",
+      "dirHint": "Dosyalar dosya sisteminizden canlı okunur (kopyalanmaz). Sadece Chromium tabanlı tarayıcılar.",
+      "deleteProject": "Projeyi Sil",
+      "nameIsRequired": "Ad zorunludur.",
+      "filePickFailed": "Dosya seçimi başarısız oldu.",
+      "fileTooLarge": "\"{{name}}\" çok büyük ({{size}} KB)",
+      "fileUnreadable": "\"{{name}}\" dosyası okunamadı",
+      "fileEmpty": "\"{{name}}\" dosyası boş",
+      "storageError": "Depolama hatası: {{msg}}",
+      "folderPickFailed": "Klasör seçimi başarısız oldu.",
+      "folderRequiresNewer": "Klasör yükleme eklentinin daha yeni bir sürümünü gerektirir.",
+      "folderUploadFailed": "Klasör yüklenemedi: {{msg}}",
+      "filesUploaded": "{{count}} dosya yüklendi, {{skipped}} atlandı (çok büyük, okunamayan veya metin olmayan).",
+      "linkFailed": "Dizin bağlanamadı.",
+      "refreshFailed": "Dizin yenilenemedi.",
+      "downloadAll": "Tüm dosyaları birleştirilmiş tek bir metin dosyası olarak indir",
+      "downloadFile": "{{name}} indir",
+      "removeFile": "{{name}} dosyasını bu projeden kaldır",
+      "deleteConfirm": "\"{{name}}\" projesi silinsin mi? Bu işlem projeye ait {{count}} dosyayı da kaldıracaktır.",
+      "filesUploadedShort": "{{count}} dosya yüklendi, {{skipped}} atlandı (çok büyük veya boş)."
+    },
+    "projectsCard": {
+      "title": "Projeler",
+      "manage": "Yönet",
+      "description": "Sohbet girişinin altından proje ve dosya seçimi yapılabilir."
+    },
+    "selectionOverlay": {
+      "selected": "seçildi",
+      "deselectAll": "Tüm Seçimi Kaldır",
+      "selectAll": "Tümünü Seç",
+      "markdown": "Markdown (.md)",
+      "pdf": "PDF Belgesi",
+      "html": "Etkileşimli HTML",
+      "image": "Uzun Ekran Görüntüsü",
+      "cancel": "İptal",
+      "exportHint": "Lütfen önce dışa aktarmak istediğiniz mesajları seçin."
+    },
+    "questionPanel": {
+      "of": "{{current}} / {{total}}",
+      "dismiss": "Kapat",
+      "somethingElse": "Başka bir şey...",
+      "typeAnswer": "Yanıtınızı buraya yazın...",
+      "keyboardNav": "Gezinmek için ↑↓",
+      "keyboardSelect": "Seçmek için Enter",
+      "keyboardClose": "Kapatmak için Esc",
+      "sendAnswers": "Yanıtları Gönder",
+      "skip": "Geç",
+      "next": "İleri",
+      "other": "Diğer",
+      "noOptionSkipped": "*(Seçenek seçilmedi / Geçildi)*",
+      "noAnswerSkipped": "*(Yanıt verilmedi / Geçildi)*",
+      "answersHeader": "İşte sorularına verdiğim yanıtlar:\n\n",
+      "noInputField": "DeepSeek giriş alanı bulunamadı."
+    },
+    "statusBanner": {
+      "title": "DeepSeek {{indicator}} sorun tespit edildi | {{description}}",
+      "message": "Sorun sizden kaynaklı değil, DeepSeek sunucularından kaynaklanmaktadır. Sunucular yüksek yük veya bakım nedeniyle sorun yaşıyor olabilir."
+    },
+    "announcementBanner": {
+      "dismiss": "Kapat"
+    },
+    "attachMenu": {
+      "buttonTitle": "Gelişmiş Yükleme",
+      "attachProject": "Projeyi Bağla",
+      "voicePrompt": "Sesli Komut",
+      "stopRecording": "Kaydı Durdur",
+      "uploadFile": "Dosya Yükle",
+      "uploadFolder": "Klasör Yükle",
+      "githubRepo": "GitHub Reposu",
+      "githubAuthLabel": "Kimliği doğrulanmış GitHub erişimi",
+      "fetchWebPage": "Web Sayfası Getir",
+      "githubImportTitle": "GitHub Repo İçe Aktar",
+      "authenticated": "Kimlik Doğrulandı",
+      "githubPlaceholder": "https://github.com/sahip/repo veya sahip/repo",
+      "includeCommits": "Commit geçmişini dahil et",
+      "commitsLabel": "Commit sayısı:",
+      "close": "Kapat",
+      "fetch": "Getir",
+      "fetching": "Getiriliyor...",
+      "projectLabel": "Proje",
+      "noProject": "Hiçbiri",
+      "projectHint": "Seçilen projenin talimatları yalnızca ilk mesajda geçerli olur.",
+      "deselectAll": "Tüm seçimi kaldır",
+      "selectAll": "Tümünü seç",
+      "file": "dosya",
+      "files": "dosya",
+      "attach": "Bağla ({{count}})",
+      "noFiles": "Dosya yok — Projeleri Yönet kısmından ekleyin",
+      "noProjectSelected": "Proje seçilmedi",
+      "webImportTitle": "Web Sayfası Getir",
+      "webPlaceholder": "https://example.com/makale",
+      "noSpeechRecognition": "Tarayıcı Ses Tanıma özelliğini desteklemiyor.",
+      "voiceError": "Ses Hatası: {{msg}}",
+      "noInputField": "Giriş alanı bulunamadı.",
+      "filePickFailed": "Dosya seçimi başarısız oldu.",
+      "folderPickFailed": "Klasör seçimi başarısız oldu.",
+      "folderRequiresNewer": "Klasör yükleme eklentinin daha yeni bir sürümünü gerektirir.",
+      "folderUploadFailed": "Klasör yüklenemedi: {{msg}}",
+      "invalidGithubUrl": "Geçersiz URL. Şunu kullanın: https://github.com/sahip/repo veya sahip/repo",
+      "commitsFailed": "Commit geçmişi getirilemedi: {{msg}}",
+      "repoFailed": "Repo getirilemedi: {{msg}}",
+      "invalidWebUrl": "Lütfen geçerli bir URL girin (http/https dahil).",
+      "webFetchFailed": "Sayfa içeriği getirilemedi: {{msg}}"
+    },
+    "codeRunner": {
+      "pythonRunner": "Python Çalıştırıcı",
+      "tsRunner": "TypeScript Çalıştırıcı",
+      "jsRunner": "JavaScript Çalıştırıcı",
+      "luaRunner": "Lua Çalıştırıcı",
+      "rubyRunner": "Ruby Çalıştırıcı",
+      "download": "İndir",
+      "placeholder": "Kodunuzu buraya yazın...",
+      "running": "Çalıştırılıyor...",
+      "runPython": "▶ Python Çalıştır",
+      "runTs": "▶ TS Çalıştır",
+      "runJs": "▶ JS Çalıştır",
+      "runLua": "▶ Lua Çalıştır",
+      "runRuby": "▶ Ruby Çalıştır",
+      "consoleOutput": "Konsol Çıktısı",
+      "clear": "Temizle",
+      "noOutput": "(Kod çıktı vermeden başarıyla tamamlandı)",
+      "loadingPyodide": "Pyodide Çalışma Ortamı Yükleniyor...",
+      "finished": "Tamamlandı.",
+      "executionError": "Çalıştırma Hatası.",
+      "pythonStatus": "Python 3.x (WASM)",
+      "tsStatus": "TypeScript (Babel)",
+      "jsStatus": "JavaScript (V8)",
+      "luaStatus": "Lua (Fengari)",
+      "rubyStatus": "Ruby (Opal)"
+    },
+    "autoCodeResult": {
+      "success": "Çalıştırma Başarılı",
+      "rejected": "İstek Reddedildi",
+      "failed": "Çalıştırma Başarısız",
+      "completed": "{{lang}} kodu başarıyla çalıştırıldı",
+      "wasRejected": "{{lang}} kodunun çalıştırılması reddedildi",
+      "execFailed": "{{lang}} kodunun çalıştırılması başarısız oldu",
+      "hideOutput": "Çıktıyı Gizle ▴",
+      "showOutput": "Çıktıyı Göster ▾"
+    },
+    "searchResult": {
+      "searching": "DuckDuckGo aranıyor...",
+      "resultsFor": "Arama Sonuçları: {{query}}",
+      "resultCount": "{{count}} sonuç bulundu"
+    },
+    "autoCodeRunner": {
+      "aiWantsToRun": "Yapay zeka {{lang}} kodu çalıştırmak istiyor",
+      "safeSandbox": "Bu kod güvenli bir tarayıcı sanal alanında (sandbox) yürütülecektir.",
+      "runCode": "▶ Kodu Çalıştır",
+      "reject": "✕ Reddet",
+      "running": "Çalışıyor...",
+      "finished": "Tamamlandı",
+      "runAgain": "Tekrar Çalıştır",
+      "error": "Hata",
+      "retry": "Yeniden Dene",
+      "rejected": "Reddedildi",
+      "actuallyRun": "Yine de Çalıştır",
+      "hideCode": "Kodu Gizle ▴",
+      "showCode": "Kodu Göster ▾",
+      "consoleOutput": "Konsol Çıktısı"
+    },
+    "toolCard": {
+      "pythonRunner": "Python Çalıştırıcı"
+    },
+    "downloadCard": {
+      "download": "İndir"
+    },
+    "pptxCard": {
+      "title": "PowerPoint Sunumu",
+      "download": "İndir",
+      "working": "Çalışıyor...",
+      "showScript": "Oluşturulan betiği göster",
+      "hideScript": "Oluşturulan betiği gizle",
+      "preparing": "Sanal ortam hazırlanıyor...",
+      "downloading": "İndiriliyor...",
+      "success": "Başarılı!",
+      "error": "Hata: {{msg}}",
+      "generating": "PPTX Oluşturuluyor...",
+      "bridgeError": "Bağlantı Hatası",
+      "browserUnsupported": "Tarayıcınız desteklenmemektedir",
+      "browserUnsupportedDesc": "Tarayıcınızı desteklemek için çalışıyoruz. Eğer yardımcı olmak isterseniz GitHub sayfamıza göz atabilirsiniz."
+    },
+    "excelCard": {
+      "title": "Excel Tablosu",
+      "download": "İndir",
+      "working": "Çalışıyor...",
+      "showScript": "Oluşturulan betiği göster",
+      "hideScript": "Oluşturulan betiği gizle",
+      "preparing": "Sanal ortam hazırlanıyor...",
+      "downloading": "İndiriliyor...",
+      "success": "Başarılı!",
+      "error": "Hata: {{msg}}",
+      "generating": "Excel Oluşturuluyor...",
+      "bridgeError": "Bağlantı Hatası",
+      "browserUnsupported": "Tarayıcınız desteklenmemektedir",
+      "browserUnsupportedDesc": "Tarayıcınızı desteklemek için çalışıyoruz. Eğer yardımcı olmak isterseniz GitHub sayfamıza göz atabilirsiniz."
+    },
+    "docxCard": {
+      "title": "Word Dokümanı",
+      "download": "İndir",
+      "working": "Çalışıyor...",
+      "showScript": "Oluşturulan betiği göster",
+      "hideScript": "Oluşturulan betiği gizle",
+      "preparing": "Sanal ortam hazırlanıyor...",
+      "downloading": "İndiriliyor...",
+      "success": "Başarılı!",
+      "error": "Hata: {{msg}}",
+      "generating": "Word Dokümanı Oluşturuluyor...",
+      "bridgeError": "Bağlantı Hatası",
+      "browserUnsupported": "Tarayıcınız desteklenmemektedir",
+      "browserUnsupportedDesc": "Tarayıcınızı desteklemek için çalışıyoruz. Eğer yardımcı olmak isterseniz GitHub sayfamıza göz atabilirsiniz."
+    },
+    "visualizerCard": {
+      "title": "Görselleştirici",
+      "subtitle": "Etkileşimli Simülasyon",
+      "openInPanel": "Panelde Aç"
+    },
+    "previewPanel": {
+      "close": "Kapat",
+      "download": ".html İndir"
+    },
+    "htmlPreview": {
+      "title": "HTML Önizleme",
+      "subtitle": "Etkileşimli çıktı",
+      "downloadHtml": ".html İndir"
+    },
+    "pptxGenerator": {
+      "title": "PowerPoint Üretici",
+      "subtitle": "PptxGenJS Motoru",
+      "heading": "PowerPoint Sunumu",
+      "download": "İndir",
+      "showScript": "Oluşturulan betiği göster",
+      "hideScript": "Betiği gizle",
+      "processing": "İşleniyor...",
+      "done": "Tamamlandı!",
+      "error": "Hata"
+    },
+    "loadingIndicator": {
+      "working": "Çalışıyor..."
+    },
+    "ragPreview": {
+      "title": "RAG eşleşen dosyalar",
+      "moreFiles": "+{{count}} dosya daha",
+      "lines": "Satır {{start}}–{{end}}"
+    },
+    "expandToggle": {
+      "expand": "Genişlet",
+      "collapse": "Daralt",
+      "expandTitle": "Yazma Alanını Genişlet",
+      "collapseTitle": "Yazma Alanını Daralt",
+      "showMore": "Devamını Göster",
+      "showLess": "Daha Az Göster"
+    },
+    "messageOverlay": {
+      "questionsAsked": "Bağlamı anlamak için sorular soruldu.",
+      "questionsSubtitle": "Lütfen yanıtlarınızı aşağıdaki etkileşim panelinden girin.",
+      "characterCreated": "Karakter/Persona oluşturuldu.",
+      "characterActive": "Aktif karakter: <strong>{{name}}</strong>",
+      "skillCreated": "Yetenek oluşturuldu.",
+      "skillActive": "Aktif yetenek: <strong>{{name}}</strong>",
+      "webFetchRequested": "Web sayfası getiriliyor",
+      "githubFetchRequested": "GitHub deposu getiriliyor",
+      "searchRequested": "DuckDuckGo aranıyor...",
+      "memoryStored": "Bellek kaydedildi ({{count}})."
+    },
+    "savedItems": {
+      "title": "Kaydedilenler",
+      "bookmarks": "Yer İmleri",
+      "snippets": "Snippetlar",
+      "newSnippet": "Yeni Snippet",
+      "editSnippet": "Snippet'ı Düzenle",
+      "search": "Kaydedilenlerde ara...",
+      "emptyBookmarks": "Henüz yer imi yok. Kaydetmek için herhangi bir mesajdaki yer imi ikonuna tıklayın.",
+      "emptySnippets": "Henüz snippet yok. Sık kullandığınız prompt'larınızı kaydetmek için bir tane oluşturun.",
+      "delete": "Sil",
+      "edit": "Düzenle",
+      "send": "Sohbete Gönder",
+      "removeBookmark": "Yer imini kaldır",
+      "bookmarkThis": "Bu mesajı yer imlerine ekle",
+      "bookmarked": "Mesaj yer imlerine eklendi",
+      "bookmarkRemoved": "Yer imi kaldırıldı",
+      "deleted": "Silindi",
+      "snippetSent": "Snippet gönderildi",
+      "importSuccess": "{{count}} öğe içe aktarıldı",
+      "importFailed": "İçe aktarma başarısız: {{msg}}",
+      "namePlaceholder": "Snippet adı",
+      "contentPlaceholder": "Prompt'unuzu veya mesajınızı buraya yapıştırın...",
+      "contentRequired": "İçerik gereklidir.",
+      "save": "Kaydet",
+      "cancel": "İptal",
+      "titleRequired": "Başlık gereklidir.",
+      "export": "Dışa Aktar",
+      "import": "İçe Aktar",
+      "openConversation": "Konuşmayı aç",
+      "dateJustNow": "az önce",
+      "dateMinAgo": "{{count}}dk önce",
+      "dateHourAgo": "{{count}}s önce"
+    },
+    "sidebarMenu": {
+      "tags": "Etiketler (BDS)",
+      "exportChat": "Sohbeti Dışa Aktar (BDS)",
+      "getBdsApp": "BDS Uygulamasını İndir",
+      "whatsNew": "Neler Yeni?"
+    },
+    "sidebarSearch": {
+      "placeholder": "Sohbette ara... (#etiket)"
+    },
+    "files": {
+      "standalone": {
+        "packageTitle": "Oluşturulan dosya paketi",
+        "folderPath": "{{path}} (klasör yapısı korundu)",
+        "singleTitle": "Oluşturulan dosya"
+      },
+      "longWork": {
+        "noFiles": "LONG_WORK tamamlandı ancak dosya üretilmedi.",
+        "complete": "LONG_WORK tamamlandı: {{count}} dosya arşivlendi.",
+        "projectTitle": "LONG_WORK projesi",
+        "filesPackaged": "{{count}} dosya paketlendi"
+      },
+      "webReader": {
+        "fetching": "Sayfa içeriği getiriliyor...",
+        "processing": "İçerik işleniyor...",
+        "converting": "Markdown formatına dönüştürülüyor...",
+        "creating": "Dosya oluşturuluyor...",
+        "fetchFailed": "Sayfa getirilemedi.",
+        "parseFailed": "Bu sayfadaki ana içerik çözümlenemedi.",
+        "unknown": "Bilinmeyen"
+      },
+      "githubReader": {
+        "downloading": "{{owner}}/{{repo}} ({{branch}}) indiriliyor...",
+        "extracting": "ZIP arşivi açılıyor...",
+        "processing": "Dosyalar işleniyor...",
+        "creating": "Dosya oluşturuluyor...",
+        "invalidUrl": "Geçersiz GitHub URL'si. Şunu kullanın: https://github.com/sahip/repo",
+        "tokenRejected": "GitHub tokenınızı reddetti. Token yetkilerini ve süresini kontrol edin.",
+        "notFound": "Repo bulunamadı. Özel repolar için GitHub tokenı eklemeniz gerekebilir. Gelişmiş Ayarlar'dan ekleyebilirsiniz.",
+        "downloadFailed": "{{owner}}/{{repo}}/{{branch}} indirilemedi. URL'yi kontrol edin veya reponun herkese açık olduğundan emin olun.",
+        "extractFailed": "ZIP arşivi açılamadı: {{msg}}",
+        "directoryTree": "Dizin Ağacı:"
+      },
+      "youtubeReader": {
+        "invalidUrl": "Geçersiz YouTube URL'si.",
+        "fallbackTitle": "YouTube Videosu",
+        "noTranscript": "[Altyazı bulunamadı. Bu videoda altyazı seçeneği olmayabilir.]",
+        "transcriptError": "[Altyazı getirme hatası: {{msg}}]",
+        "bgScriptError": "[Arka plan betiğinden altyazı verisi alınamadı.]"
+      },
+      "twitterReader": {
+        "fetchFailed": "Twitter OEmbed API'den tweet bilgisi alınamadı.",
+        "noExtract": "Tweet metni çözümlenemedi."
+      }
+    },
+    "exporter": {
+      "branding": "DeepSeek Memory",
+      "archiveReport": "Arşiv Raporu",
+      "userQuery": "Kullanıcı Sorusu",
+      "aiResponse": "Yapay Zeka Yanıtı",
+      "pdfFooter": "DeepSeek Memory Tarayıcı Eklentisi ile oluşturulmuştur",
+      "imageHeader": "Uzun Görsel Yakalama",
+      "imageDate": "{{date}} tarihinde yakalandı",
+      "userLabel": "Kullanıcı",
+      "assistantLabel": "Asistan",
+      "imageFooter": "DeepSeek Memory aracılığıyla oluşturulmuştur",
+      "htmlLogo": "DeepSeek Memory Dışa Aktarım",
+      "htmlToggleTheme": "Temayı Değiştir",
+      "htmlFooter": "DeepSeek Memory Tarayıcı Eklentisi ile dışa aktarılmıştır",
+      "copy": "Kopyala",
+      "copied": "Kopyalandı!",
+      "powerpoint": "PowerPoint",
+      "presentation": "Sunum",
+      "bdsTool": "BDS Aracı",
+      "imageFailed": "Görsel oluşturulamadı. Lütfen daha az mesaj seçip tekrar deneyin."
+    },
+    "auto": {
+      "fetchFailed": "{{url}} adresi getirilemedi:\n\n{{msg}}",
+      "githubFailed": "{{url}} GitHub reposu getirilemedi:\n\n{{msg}}",
+      "tweetFailed": "{{url}} tweeti getirilemedi:\n\n{{msg}}",
+      "youtubeFailed": "{{url}} YouTube videosu getirilemedi:\n\n{{msg}}",
+      "statusSuccess": "BAŞARILI",
+      "statusError": "HATA",
+      "statusRejected": "REDDEDİLDİ",
+      "noOutput": "(Çıktı yok)",
+      "generationError": "{{toolName}} oluşturulurken HATA meydana geldi.",
+      "errorMessage": "Hata Mesajı: {{msg}}",
+      "correctionPrompt": "Lütfen yukarıdaki hatayı analiz edin, Kütüphane API Referansını inceleyin, kodu düzelterek güncel versiyonu ilgili <BDS:{{tagName}}> etiketi içerisinde yeniden sağlayın. Şunlara dikkat edin: doğru API metot isimleri, doğru argümanlar ve kodun sonundaki zorunlu kaydetme/çıktı alma çağrısı."
+    },
+    "messageProcessor": {
+      "minCost": "<$0.0001",
+      "contextTemplate": "{{used}} / {{total}} ({{percent}}%)",
+      "contextTooltip": "Bağlam: {{text}}",
+      "longWorkClosed": "API yanıtı bittiği için LONG_WORK sonlandırıldı.",
+      "userPrice": "API: ~{{price}}",
+      "tokenCount": "{{count}} tok"
+    },
+    "whatsnew": {
+      "title": "Yenilikler",
+      "versionHistory": "Sürüm Geçmişi",
+      "dismiss": "Anladım, teşekkürler!",
+      "reportBug": "Hata Bildir",
+      "requestFeature": "Özellik Öner",
+      "brandingNote": "DeepSeek Memory açık kaynaklı bir topluluk projesidir.",
+      "seeAllChanges": "v{{version}} sürümündeki tüm değişiklikleri GitHub'da gör",
+      "seeDetailed": "Detaylı sürüm notlarını GitHub'da gör",
+      "features": {
+        "v0_1_9": {
+          "title": "Çoklu Sistem Promptları, Visualizer Yenilemesi ve Derin Araştırma",
+          "features": {
+            "feat_0": {
+              "title": "Çoklu Sistem Prompt Modu ve Gelişmiş Zamanlama",
+              "description": "Her giriş için ayrı zamanlama seçenekleriyle birden fazla sistem promptu kullanın - ilk mesaj, her N turda bir veya her zaman."
+            },
+            "feat_1": {
+              "title": "Visualizer Yenilemesi",
+              "description": "Visualizer araçları artık yeniden boyutlandırılabiliyor ve indirilebiliyor. Tüm arayüz daha temiz bir deneyim için yeniden tasarlandı."
+            },
+            "feat_2": {
+              "title": "Derin Araştırma",
+              "description": "DeepSeek'e bir konu söyleyin, oluşturulan planı inceleyin ve onayladığınızda otomatik olarak çok adımlı derin araştırma yapsın."
+            },
+            "feat_3": {
+              "title": "Dışa/içe Aktarma Geliştirmeleri",
+              "description": "Tüm uzantı verileri (ayarlar, skill'ler, anılar, karakterler, projeler) artık isteğe bağlı şifreleme desteğiyle dışa ve içe aktarılabiliyor."
+            }
+          }
+        },
+        "v0_1_8": {
+          "title": "Bellek Revizyonu, Kaydedilen Öğeler ve API Playground",
+          "features": {
+            "feat_0": {
+              "title": "Bellek Revizyonu",
+              "description": "Called bellek sistemi yenilendi. Token overlap tabanlı bir sisteme geçilerek daha iyi bağlam eşleştirme sağlandı."
+            },
+            "feat_1": {
+              "title": "Kaydedilen Öğeler (Yer İmleri ve Snippet'lar)",
+              "description": "Mesajlarınızı kaydedip daha sonra kolayca erişebilirsiniz. Snippet'lar oluşturup tek tıkla yollayabilirsiniz."
+            },
+            "feat_2": {
+              "title": "Skill Oluşturma Aracı",
+              "description": "AI'dan sizin için doğrudan sohbet üzerinden bir skill oluşturmasını isteyebilirsiniz."
+            },
+            "feat_3": {
+              "title": "Başka AI'dan Bellek İçe Aktarma",
+              "description": "Diğer AI platformlarındaki belleğinizi DeepSeek'e aktarabilirsiniz."
+            },
+            "feat_4": {
+              "title": "API Playground",
+              "description": "DeepSeek API'sini daha kolay test edebilmeniz için yerleşik bir playground eklendi."
+            },
+            "feat_5": {
+              "title": "Otomatik Arama Aracı",
+              "description": "Expert moddan link okuma ve arama kaldırılınca, bunun yerine kendi entegre arama aracımızı ekledik."
+            },
+            "feat_6": {
+              "title": "Hata Düzeltmeleri ve UX İyileştirmeleri",
+              "description": "Çok sayıda hata düzeltmesi ve kullanıcı deneyimi iyileştirmesi."
+            }
+          }
+        },
+        "v0_1_7": {
+          "title": "Lokalizasyon, Özel Yönergeler ve RAG",
+          "features": {
+            "feat_0": {
+              "title": "Lokalizasyon Sistemi",
+              "description": "DeepSeek Memory artık birden fazla dili destekliyor. Çevirileri iyileştirmek veya kendi dilinizi eklemek için <a href='https://github.com/mwahidops/deepseek-memory/blob/main/LOCALIZATION.md' target='_blank' style='color: #4d6bfe; text-decoration: underline;'>GitHub</a> repo'muzu ziyaret edin."
+            },
+            "feat_1": {
+              "title": "Özel Yönergeler",
+              "description": "Artık birden fazla system prompt oluşturabilir, kaydedebilir ve aralarında kolaylıkla geçiş yapabilirsiniz."
+            },
+            "feat_2": {
+              "title": "Proje İçi RAG Arama",
+              "description": "İlkel bir RAG sistemi eklendi. Proje bağlayarak veya cihazınızdaki yerel bir klasörü seçerek RAG araması yapabilirsiniz. İlerleyen sürümlerde daha da geliştireceğiz."
+            },
+            "feat_3": {
+              "title": "UI İyileştirmeleri",
+              "description": "Uzun mesajlarda daraltma/genişletme seçeneği, eklenti ikonuna tıklayınca DeepSeek sitesinin açılması, Web Fetch ve GitHub Fetch için görsel kartlar, sunucu durumu ve duyuru bildirimleri."
+            },
+            "feat_4": {
+              "title": "Hata Düzeltmeleri ve Performans",
+              "description": "BDS tool parser ve Office aracı iyileştirmeleri. DeepSeek arayüzündeki font ve punto sorunları düzeltildi. Çeşitli kararlılık ve performans optimizasyonları."
+            }
+          }
+        },
+        "v0_1_6": {
+          "title": "Android ve Organizasyon",
+          "features": {
+            "feat_0": {
+              "title": "Android Sürümü",
+              "description": "DeepSeek Memory artık <a href='https://github.com/mwahidops/deepseek-memory/releases' target='_blank' style='color: #4d6bfe; text-decoration: underline;'>Android</a> cihazlarda kullanılabilir."
+            },
+            "feat_1": {
+              "title": "Sohbet Filtreleme ve Etiketler",
+              "description": "Sohbet oturumlarınıza etiketler ekleyerek düzenleyin Menüden sohbetleri kolayca filtreleyin ve gruplayın."
+            },
+            "feat_2": {
+              "title": "Yenilenen Dışa Aktarma Arayüzü",
+              "description": "Markdown, PDF, HTML ve Görsel olarak dışa aktarma işlemleri için yeni arayüz tasarımı. Sohbetin tamamını veya belirli kısımlarını dışa aktarabilirsiniz."
+            }
+          }
+        },
+        "v0_1_5": {
+          "title": "Geliştirmeler ve Görünürlük",
+          "features": {
+            "feat_0": {
+              "title": "Yenilikler Penceresi",
+              "description": "Şu an tam olarak bu pencereye bakıyorsunuz! Artık en son değişiklikleri doğrudan buradan sizinle paylaşacağız."
+            },
+            "feat_1": {
+              "title": "Gelişmiş Enjeksiyon Kontrolü",
+              "description": "Sistem yönergelerinin ne sıklıkla gönderileceğini seçin: 'Her zaman', 'Sadece ilk mesajda' veya özelleştirilebilir aralıklarla 'Her X mesajda bir'."
+            },
+            "feat_2": {
+              "title": "Özel Depo (Private Repo) Desteği",
+              "description": "GitHub Kişisel Erişim Tokenlarınızı (PAT) kullanarak özel depolarınızı güvenli bir şekilde içe aktarın."
+            },
+            "feat_3": {
+              "title": "Token ve Fiyat Tahmini",
+              "description": "API eşdeğeri kullanımlar için gerçek zamanlı token kullanım tahmini ve bağlam penceresi gösterimi."
+            },
+            "feat_4": {
+              "title": "Belleği Devre Dışı Bırak",
+              "description": "Eklentinin sohbet bağlamını kaydetmesini önlemek için Ayarlar menüsüne yeni bir seçenek eklendi."
+            },
+            "feat_5": {
+              "title": "Kararlılık İyileştirmeleri",
+              "description": "Mesaj işleme sorunları giderildi ve genel kullanıcı arayüzü durumu iyileştirildi."
+            }
+          }
+        },
+        "v0_1_4": {
+          "title": "Projeler ve Gelişmiş Ayarlar",
+          "features": {
+            "feat_0": {
+              "title": "Projeler Menüsü",
+              "description": "Sohbet oturumları ve dosyalar için daha iyi bir organizasyonel kontrol sağlar."
+            },
+            "feat_1": {
+              "title": "Geçmiş Arama",
+              "description": "Sohbet geçmişi kenar çubuğuna arama özelliği eklendi."
+            },
+            "feat_2": {
+              "title": "Gelişmiş Ayarlar",
+              "description": "Daha az yer kaplaması ve odaklanmayı kolaylaştırması için akordeon düzeninde yeniden tasarlanan ayarlar menüsü."
+            },
+            "feat_3": {
+              "title": "Sistem Yönergesini Kapat",
+              "description": "İhtiyaç duyulmadığında Gizli Sistem Yönergesini tamamen kapatabilme seçeneği."
+            },
+            "feat_4": {
+              "title": "Dili Zorla",
+              "description": "Girdi dilinden bağımsız olarak DeepSeek'in her zaman tercih ettiğiniz dilde yanıt vermesini sağlayın."
+            }
+          }
+        },
+        "v0_1_3": {
+          "title": "Soru Sorma ve Dışa Aktarmalar",
+          "features": {
+            "feat_0": {
+              "title": "Soru Sorma Aracı",
+              "description": "DeepSeek, bağlam veya talimatlar konusunda kararsız kaldığında artık sizden açıklama talep edebilir."
+            },
+            "feat_1": {
+              "title": "Markdown ve PDF Dışa Aktarma",
+              "description": "Tüm sohbet oturumlarınızı Markdown ve PDF dosyalarına aktarabilirsiniz."
+            },
+            "feat_2": {
+              "title": "Yönerge Sıfırlama",
+              "description": "Sistem yönergesini kolayca varsayılan durumuna sıfırlayın."
+            },
+            "feat_3": {
+              "title": "Gezinme Düzeltmeleri",
+              "description": "Logoya veya 'Yeni Sohbet' butonuna tıklandığında sayfanın tamamen yeniden yüklenmesi sorunu giderildi."
+            }
+          }
+        },
+        "v0_1_2": {
+          "title": "Çapraz Tarayıcı ve Kod Çalıştırıcılar",
+          "features": {
+            "feat_0": {
+              "title": "Firefox Desteği",
+              "description": "Firefox tarayıcısı için deneysel destek eklendi."
+            },
+            "feat_1": {
+              "title": "Geliştirilmiş Kod Çalıştırıcılar",
+              "description": "Python çalıştırıcısı güncellendi, yeni JS ve TS çalıştırma ortamları eklendi."
+            },
+            "feat_2": {
+              "title": "GitHub Otomatik Çekme",
+              "description": "BDS:AUTO komutu ile GitHub depolarını doğrudan sohbete enjekte edin."
+            }
+          }
+        },
+        "v0_1_1": {
+          "title": "Ses Desteği ve Kararlılık",
+          "features": {
+            "feat_0": {
+              "title": "Tam Ses Desteği",
+              "description": "Konuşmadan Metne (Speech-to-Text) ve Metinden Konuşmaya (Text-to-Speech) entegrasyonu."
+            },
+            "feat_1": {
+              "title": "Ses Yapılandırması",
+              "description": "Ayarlar menüsünde ses ve tanıma dilleri yapılandırma seçenekleri."
+            },
+            "feat_2": {
+              "title": "Geliştirilmiş Gezinme",
+              "description": "Logo ve 'Yeni Sohbet' alanları gerçek &lt;a&gt; etiketlerine dönüştürülerek 'Yeni sekmede aç' desteği eklendi."
+            },
+            "feat_3": {
+              "title": "Akış Kararlılığı",
+              "description": "Tıkanan veri akışlarının daha iyi yönetilmesi ve otomatik etiket kapatma."
+            }
+          }
+        }
+      }
+    },
+    "language": {
+      "en": "English",
+      "tr": "Türkçe",
+      "ru": "Rusça",
+      "zh-cn": "简体中文"
+    },
+    "apiPlayground": {
+      "title": "API Playground",
+      "builder": "Oluşturucu",
+      "response": "Yanıt",
+      "history": "Geçmiş",
+      "presets": "Şablonlar",
+      "endpoint": "Endpoint",
+      "model": "Model",
+      "messages": "Mesajlar",
+      "stream": "Stream",
+      "temperature": "Temperature",
+      "maxTokens": "Max Tokens",
+      "topP": "Top P",
+      "frequencyPenalty": "Frequency Penalty",
+      "presencePenalty": "Presence Penalty",
+      "thinking": "Thinking",
+      "disabled": "Devre Dışı",
+      "enabled": "Etkin",
+      "budgetToken": "Budget Token",
+      "reasoningEffort": "Reasoning Effort",
+      "low": "Düşük",
+      "medium": "Orta",
+      "high": "Yüksek",
+      "responseFormat": "Response Format",
+      "text": "Metin",
+      "jsonObject": "JSON Object",
+      "jsonSchema": "JSON Schema",
+      "schema": "Schema",
+      "tools": "Araçlar",
+      "toolChoice": "Tool Choice",
+      "auto": "Otomatik",
+      "required": "Gerekli",
+      "none": "Yok",
+      "toolName": "Araç Adı",
+      "addTool": "Araç Ekle",
+      "addMessage": "Mesaj Ekle",
+      "role": "Rol",
+      "content": "İçerik",
+      "name": "Ad",
+      "prefix": "Önek",
+      "toolCallId": "Tool Call ID",
+      "remove": "Kaldır",
+      "moveUp": "Yukarı",
+      "moveDown": "Aşağı",
+      "beta": "Beta",
+      "prefixCompletion": "Prefix Completion",
+      "store": "Store",
+      "reasoning": "Reasoning",
+      "metadata": "Metadata",
+      "userId": "Kullanıcı ID",
+      "labels": "Etiketler",
+      "logprobs": "Logprobs",
+      "topLogprobs": "Top Logprobs",
+      "copy": "Kopyala",
+      "noResponse": "Yanıtı görmek için bir istek gönderin.",
+      "noKey": "Anahtar yok",
+      "messagePlaceholder": "Mesaj içeriğini girin...",
+      "sending": "Gönderiliyor...",
+      "send": "Gönder",
+      "reset": "Sıfırla",
+      "saveRequest": "İsteği Kaydet",
+      "saveName": "Kayıt Adı",
+      "manageKeys": "API Anahtarlarını Yönet",
+      "addKey": "Anahtar Ekle",
+      "noKeysHint": "Kayıtlı API anahtarı yok. İstek göndermek için anahtar ekleyin.",
+      "exportHistory": "Dışa Aktar",
+      "clearHistory": "Temizle",
+      "noHistory": "Geçmiş boş.",
+      "delete": "Sil",
+      "historyLimit": "Geçmiş 500 kayıtla sınırlıdır. Temizlemeden önce dışa aktarın.",
+      "builtinPresets": "Yerleşik Şablonlar",
+      "savedRequests": "Kayıtlı İstekler",
+      "viewCurl": "cURL",
+      "copyCode": "Kopyala",
+      "clear": "Temizle",
+      "latency": "Gecikme",
+      "finishReason": "Bitiş Nedeni",
+      "tokens": "Token",
+      "input": "Giriş",
+      "output": "Çıkış",
+      "cacheHit": "Cache Hit",
+      "cacheMiss": "Cache Miss",
+      "cacheSavings": "Önbellek Tasarrufu",
+      "cost": "Maliyet",
+      "estimatedCost": "Tahmini Maliyet",
+      "responseTime": "Yanıt Süresi",
+      "rawResponse": "Ham Yanıt",
+      "streamChunks": "Akış Parçaları",
+      "toolsCalled": "Çağrılan Araçlar",
+      "searchHistory": "Ara...",
+      "allModels": "Tüm Modeller",
+      "saveNamePlaceholder": "Bu isteği adlandır...",
+      "betaFeatureDescription": "Beta özellikler (dikkatli kullanın).",
+      "codeGen": "Code Gen",
+      "promptSuffix": "Prompt Suffix",
+      "enterJsonSchema": "JSON şeması girin...",
+      "useActiveKey": "Kullanılan anahtar: {{name}}",
+      "noActiveKey": "Aktif API anahtarı yok"
+    }
+  }
+}
