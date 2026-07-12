@@ -59,8 +59,8 @@ A clean, native-feeling settings modal integrated directly into DeepSeek's own s
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Ifaz2611/Deepseek-supervisor
-cd Deepseek-supervisor
+git clone https://github.com/Ifaz2611/Deepseek-supervisor-V2
+cd Deepseek-supervisor-V2
 
 # 2. Install dependencies
 npm install
@@ -88,7 +88,7 @@ The `dist/` folder will contain the unpacked extension.
 4. Enable **Persistent Memory** and start chatting — DeepSeek will remember you.
 
 **The Magic Behind the Scenes:**  
-When DeepSeek identifies important information in your messages, it writes them to memory using `<Genaretion_X:memory_write>` tags. These tags are completely invisible in the chat UI — the extension intercepts and handles them silently in the background to update your local database.
+When DeepSeek identifies important information in your messages, it writes them to memory using `<bds:memory_write>` tags. These tags are completely invisible in the chat UI — the extension intercepts and handles them silently in the background to update your local database.
 
 ---
 
