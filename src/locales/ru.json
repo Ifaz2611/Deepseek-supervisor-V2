@@ -19,7 +19,7 @@
       "working": "Работаю..."
     },
     "drawer": {
-      "title": "DeepSeek Память",
+      "title": "DeepSeek супервайзер V2",
       "close": "Закрыть",
       "github": "GitHub",
       "version": "v{{version}}",

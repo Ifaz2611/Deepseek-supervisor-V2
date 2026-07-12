@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "DeepSeek Memory",
+  "name": "DeepSeek Supervisor V2",
   "version": "1.0.0",
-  "description": "Add persistent memory and custom skills to DeepSeek. Your AI remembers you across all conversations. Supports any language.",
+  "description": "A Chrome extension that enhances the DeepSeek chat experience by providing additional features and functionalities.",
   "permissions": ["storage"],
   "host_permissions": ["https://chat.deepseek.com/*"],
   "content_scripts": [
@@ -28,7 +28,7 @@
     "128": "icon128.png"
   },
   "action": {
-    "default_title": "DeepSeek Memory",
+    "default_title": "DeepSeek Supervisor V2",
     "default_icon": {
       "16": "icon16.png",
       "48": "icon48.png",

@@ -19,7 +19,7 @@
       "working": "Çalışıyor..."
     },
     "drawer": {
-      "title": "DeepSeek Hafıza",
+      "title": "DeepSeek Süpervizör V2",
       "close": "Kapat",
       "github": "GitHub",
       "version": "v{{version}}",

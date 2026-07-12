@@ -19,7 +19,7 @@
       "working": "处理中…"
     },
     "drawer": {
-      "title": "DeepSeek 记忆",
+      "title": "DeepSeek 导师 V2",
       "close": "关闭",
       "github": "GitHub",
       "version": "v{{version}}",

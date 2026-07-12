@@ -19,7 +19,7 @@
       "working": "Working..."
     },
     "drawer": {
-      "title": "DeepSeek Memory",
+      "title": "DeepSeek Supervisor V2",
       "close": "Close",
       "github": "GitHub",
       "version": "v{{version}}",
