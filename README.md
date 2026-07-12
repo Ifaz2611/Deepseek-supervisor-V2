@@ -1,4 +1,4 @@
-# 🧠 DeepSeek Supervisor
+# 🧠 DeepSeek Supervisor V2
 
 <div align="center">
 
