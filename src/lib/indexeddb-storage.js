@@ -233,42 +233,20 @@ export async function saveMemory(key, value, importance = "called") {
 
 /**
  * Save multiple memories in a single transaction (atomic).
+ * Uses sequential get/put to avoid transaction auto-commit race.
  * @param {Array<{key: string, value: string, importance: string}>} writes
  * @returns {Promise<{success: boolean, savedKeys: string[]}>}
  */
 export async function saveMemoriesBatch(writes) {
   try {
-    const db = await openDatabase();
+    const filtered = writes.filter((w) => w.key && w.value);
+    if (filtered.length === 0) return { success: true, savedKeys: [] };
     const savedKeys = [];
-
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_MEMORIES, "readwrite");
-      const store = tx.objectStore(STORE_MEMORIES);
-
-      for (const write of writes) {
-        if (!write.key || !write.value) continue;
-
-        const getReq = store.get(write.key);
-        getReq.onsuccess = () => {
-          const existing = getReq.result;
-          const newVersion = (existing?.version || 0) + 1;
-
-          store.put({
-            key: write.key,
-            value: write.value,
-            importance: write.importance || "called",
-            updatedAt: Date.now(),
-            version: newVersion,
-            previousValue: existing?.value || null,
-          });
-
-          savedKeys.push(write.key);
-        };
-      }
-
-      tx.oncomplete = () => resolve({ success: true, savedKeys });
-      tx.onerror = () => reject(tx.error);
-    });
+    for (const write of filtered) {
+      const ok = await saveMemory(write.key, write.value, write.importance || "called");
+      if (ok) savedKeys.push(write.key);
+    }
+    return { success: savedKeys.length > 0, savedKeys };
   } catch (err) {
     console.warn("IndexedDB saveMemoriesBatch failed:", err);
     return { success: false, savedKeys: [] };

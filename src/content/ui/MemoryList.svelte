@@ -1,6 +1,7 @@
 <script>
   import appState from "../state.js";
   import { normalizeMemories, saveMemoriesToStorage, deleteSingleMemory } from "../storage.js";
+  import { pushConfigToPage } from "../bridge.js";
   import { onMount } from "svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import MemoryImportModal from "./MemoryImport.svelte";
@@ -49,18 +50,19 @@
       try {
         const raw = JSON.parse(e.target.result);
         const normalized = normalizeMemories(raw);
+        if (Object.keys(normalized).length === 0) throw new Error("empty");
 
-        // Save to storage (IndexedDB or chrome.storage)
-        await saveMemoriesToStorage(normalized);
-
-        // Update local state
-        appState.memories = normalized;
+        // Merge into existing memories and persist
+        const merged = { ...appState.memories, ...normalized };
+        await saveMemoriesToStorage(merged);
+        appState.memories = merged;
+        entries = Object.entries(merged).sort((a, b) => a[0].localeCompare(b[0]));
+        pushConfigToPage();
 
         if (appState.ui) {
           appState.ui.showToast(t('memoryList.importSuccess'));
         }
       } catch (err) {
-        // Silent fail
         if (appState.ui) {
           appState.ui.showToast(t('memoryList.importFailed'));
         }

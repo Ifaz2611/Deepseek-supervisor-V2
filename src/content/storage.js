@@ -25,17 +25,18 @@ let idbAvailable = false;
 async function checkIDBAvailability() {
   try {
     if (typeof indexedDB === "undefined") return false;
-    // Try to open a test database
     const testDB = indexedDB.open("__idb_test__", 1);
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
+      let settled = false;
+      const done = (v) => { if (!settled) { settled = true; resolve(v); } };
+      const timer = setTimeout(() => done(false), 1000);
       testDB.onsuccess = () => {
-        testDB.result.close();
-        indexedDB.deleteDatabase("__idb_test__");
-        resolve(true);
+        clearTimeout(timer);
+        try { testDB.result.close(); indexedDB.deleteDatabase("__idb_test__"); } catch {}
+        done(true);
       };
-      testDB.onerror = () => resolve(false);
-      // Timeout fallback
-      setTimeout(() => resolve(false), 1000);
+      testDB.onerror = () => { clearTimeout(timer); done(false); };
+      testDB.onblocked = () => { clearTimeout(timer); done(false); };
     });
   } catch {
     return false;
@@ -45,47 +46,59 @@ async function checkIDBAvailability() {
 // ── Load ──
 
 export async function loadStateFromStorage() {
-  // Check IndexedDB availability
-  idbAvailable = await checkIDBAvailability();
+  try {
+    // Check IndexedDB availability
+    idbAvailable = await checkIDBAvailability();
 
-  if (idbAvailable) {
-    // Run migration from chrome.storage.local if needed
-    await migrateFromChromeStorage();
-  }
+    if (idbAvailable) {
+      try { await migrateFromChromeStorage(); } catch (e) { console.warn("[DeepSeek Supervisor] migrate failed:", e); }
+    }
 
-  // Load locale updates (always from chrome.storage)
-  const localeValues = await chrome.storage.local.get(["bds_locale_updates"]);
-  if (localeValues.bds_locale_updates) {
-    i18n.loadUpdatedLocales(localeValues.bds_locale_updates);
-  }
+    // Load locale updates (always from chrome.storage)
+    try {
+      const localeValues = await chrome.storage.local.get(["bds_locale_updates"]);
+      if (localeValues.bds_locale_updates) {
+        i18n.loadUpdatedLocales(localeValues.bds_locale_updates);
+      }
+    } catch (e) { console.warn("[DeepSeek Supervisor] locale load failed:", e); }
 
-  // Load settings
-  const values = await chrome.storage.local.get([
-    STORAGE_KEYS.settings,
-    STORAGE_KEYS.skills,
-    STORAGE_KEYS.memories,
-  ]);
+    // Load settings
+    const values = await chrome.storage.local.get([
+      STORAGE_KEYS.settings,
+      STORAGE_KEYS.skills,
+      STORAGE_KEYS.memories,
+    ]);
 
-  const storedSettings = values[STORAGE_KEYS.settings] || {};
-  state.settings = {
-    ...DEFAULT_SETTINGS,
-    ...storedSettings,
-  };
+    const storedSettings = values[STORAGE_KEYS.settings] || {};
+    state.settings = {
+      ...DEFAULT_SETTINGS,
+      ...storedSettings,
+    };
 
-  // Load skills (chrome.storage is fine for skills)
-  state.skills = normalizeSkills(values[STORAGE_KEYS.skills]);
+    // Load skills (chrome.storage is fine for skills)
+    state.skills = normalizeSkills(values[STORAGE_KEYS.skills]);
 
-  // Load memories - prefer IndexedDB, fallback to chrome.storage
-  if (idbAvailable) {
-    const idbMemories = await loadMemoriesFromIDB();
-    if (idbMemories !== null) {
-      state.memories = idbMemories;
+    // Load memories - prefer IndexedDB, fallback to chrome.storage
+    if (idbAvailable) {
+      try {
+        const idbMemories = await loadMemoriesFromIDB();
+        if (idbMemories !== null) {
+          state.memories = idbMemories;
+        } else {
+          state.memories = normalizeMemories(values[STORAGE_KEYS.memories]);
+        }
+      } catch (e) {
+        console.warn("[DeepSeek Supervisor] IDB load failed, falling back:", e);
+        state.memories = normalizeMemories(values[STORAGE_KEYS.memories]);
+      }
     } else {
-      // Fallback if IndexedDB load returned null
       state.memories = normalizeMemories(values[STORAGE_KEYS.memories]);
     }
-  } else {
-    state.memories = normalizeMemories(values[STORAGE_KEYS.memories]);
+  } catch (e) {
+    console.error("[DeepSeek Supervisor] loadStateFromStorage failed:", e);
+    state.settings = { ...DEFAULT_SETTINGS };
+    state.skills = [];
+    state.memories = {};
   }
 }
 

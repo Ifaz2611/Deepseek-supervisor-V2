@@ -24,6 +24,26 @@ const ICON_SVG = `
 </svg>`;
 
 let observerStarted = false;
+let pollTimer = null;
+
+// DeepSeek's dropdown has changed class names across versions. We try a broad
+// set of selectors so the integration doesn't silently break.
+const MENU_SELECTORS = [
+  ".ds-dropdown-menu",
+  "[role='menu']",
+  "[data-radix-popper-content-wrapper]",
+  ".dropdown-menu",
+  "[class*='dropdown']",
+];
+
+let lastInjectAttempt = 0;
+
+function isDropdownCandidate(el) {
+  if (!el || el.nodeType !== 1) return false;
+  // Has at least 2 clickable rows and looks like a settings menu
+  const hasOptions = el.querySelectorAll("[class*='dropdown'], [role='menuitem'], [class*='menu-option']").length >= 1;
+  return hasOptions || MENU_SELECTORS.some((sel) => el.matches && el.matches(sel));
+}
 
 /**
  * Public API used by content/index.js — starts the integration once and only once.
@@ -39,17 +59,47 @@ export function initSettingsIntegration() {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== 1) continue;
-        if (node.classList && node.classList.contains("ds-dropdown-menu")) {
+        // Direct match
+        if (isDropdownCandidate(node)) {
           injectEntry(node);
+          // Also check inside
+          node.querySelectorAll && MENU_SELECTORS.forEach((sel) => {
+            node.querySelectorAll(sel).forEach(injectEntry);
+          });
           continue;
         }
-        const nested = node.querySelector && node.querySelector(".ds-dropdown-menu");
-        if (nested) injectEntry(nested);
+        // Search descendants for any menu
+        if (node.querySelectorAll) {
+          let found = false;
+          for (const sel of MENU_SELECTORS) {
+            const nested = node.querySelector(sel);
+            if (nested) { injectEntry(nested); found = true; break; }
+          }
+          if (!found) {
+            // Last resort: if added node contains our anchor text, its ancestor is the menu
+            const txt = node.textContent || "";
+            if (ANCHOR_LABELS.some((a) => txt.includes(a))) {
+              const ancestor = node.closest ? node.closest("[class*='dropdown'], [role='menu'], div") : null;
+              if (ancestor) injectEntry(ancestor);
+              // Also try the parent
+              if (node.parentElement) injectEntry(node.parentElement);
+            }
+          }
+        }
       }
     }
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
+
+  // Polling fallback: if MutationObserver misses (e.g. portal inside shadow),
+  // scan every 1.5s for a visible menu that hasn't been injected yet.
+  pollTimer = setInterval(() => {
+    // Throttle: at most once per second actually scans DOM heavily
+    if (Date.now() - lastInjectAttempt < 1000) return;
+    lastInjectAttempt = Date.now();
+    scanAndInject();
+  }, 1500);
 }
 
 /**
@@ -57,8 +107,27 @@ export function initSettingsIntegration() {
  * before the observer picks anything up.
  */
 function scanAndInject() {
-  const menus = document.querySelectorAll(".ds-dropdown-menu");
-  menus.forEach((menu) => injectEntry(menu));
+  for (const sel of MENU_SELECTORS) {
+    document.querySelectorAll(sel).forEach((menu) => injectEntry(menu));
+  }
+  // Also scan any element that contains the anchor text but wasn't caught by selectors
+  const all = document.querySelectorAll("div, ul");
+  for (const el of all) {
+    if (el.querySelector && el.querySelector("." + ENTRY_CLASS)) continue;
+    const label = el.textContent || "";
+    if (ANCHOR_LABELS.some((a) => label.includes(a)) && el.children.length > 1) {
+      // Heuristic: element with anchor text and multiple children is likely a menu
+      // Check parents up to 3 levels
+      let cur = el;
+      for (let i = 0; i < 3 && cur; i++) {
+        if (cur.children.length >= 2 && cur.children.length <= 20) {
+          injectEntry(cur);
+          break;
+        }
+        cur = cur.parentElement;
+      }
+    }
+  }
 }
 
 /**
@@ -66,10 +135,24 @@ function scanAndInject() {
  * settings menu (i.e. it contains one of the ANCHOR_LABELS).
  */
 function injectEntry(menu) {
-  if (!menu || menu.querySelector("." + ENTRY_CLASS)) return;
+  if (!menu || !menu.querySelector) return;
+  if (menu.querySelector("." + ENTRY_CLASS)) return;
 
   const anchorOption = findAnchorOption(menu);
-  if (!anchorOption) return;
+  // If we can't find the anchor text, still inject at the end — better than
+  // showing nothing. The menu is at least a dropdown candidate.
+  if (!anchorOption) {
+    // Only do fallback insertion if menu looks like a real menu (has children)
+    if (menu.children && menu.children.length >= 1 && menu.children.length <= 30) {
+      // Avoid injecting into giant containers (e.g. body)
+      const isSmallMenu = menu.children.length <= 12 || menu.getBoundingClientRect().height < 600;
+      if (isSmallMenu) {
+        const entry = buildEntry();
+        menu.appendChild(entry);
+      }
+    }
+    return;
+  }
 
   const entry = buildEntry();
   const reference = anchorOption.nextSibling;
@@ -80,13 +163,26 @@ function injectEntry(menu) {
  * Find the menu option we want to anchor next to ("Get App" or "Download mobile App").
  */
 function findAnchorOption(menu) {
-  const options = menu.querySelectorAll(".ds-dropdown-menu-option");
+  // Try the DeepSeek-specific selector first
+  const options = menu.querySelectorAll(".ds-dropdown-menu-option, [role='menuitem'], [class*='menu-option'], [class*='dropdown'] > div, li, button");
   for (const opt of options) {
-    const label = opt.querySelector(".ds-dropdown-menu-option__label");
-    if (!label) continue;
-    const text = label.textContent.trim();
+    // Skip our own entry
+    if (opt.classList && opt.classList.contains(ENTRY_CLASS)) continue;
+    const label = opt.querySelector(".ds-dropdown-menu-option__label") || opt;
+    const text = (label.textContent || "").trim();
+    if (!text) continue;
     if (ANCHOR_LABELS.some((needle) => text.includes(needle))) {
-      return opt;
+      // Return the row element (the option itself, not the inner label)
+      return opt.closest ? (opt.closest(".ds-dropdown-menu-option") || opt) : opt;
+    }
+  }
+  // Fallback: text search across all descendants
+  const allNodes = menu.querySelectorAll("*");
+  for (const n of allNodes) {
+    if (n.children.length !== 0) continue; // leaf only to avoid matching container
+    const t = (n.textContent || "").trim();
+    if (ANCHOR_LABELS.some((a) => t.includes(a))) {
+      return n.closest ? (n.closest("div, li, button, [role='menuitem']") || n) : n;
     }
   }
   return null;

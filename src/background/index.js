@@ -1,3 +1,16 @@
+// Clicking the extension icon should open the drawer even if the dropdown injection fails.
+// This is the guaranteed fallback entry point.
+if (chrome.action && chrome.action.onClicked) {
+  chrome.action.onClicked.addListener(async (tab) => {
+    if (!tab || !tab.id) return;
+    try {
+      await chrome.tabs.sendMessage(tab.id, { type: "BDS_OPEN_DRAWER" });
+    } catch (_) {
+      // Content script may not be ready yet (e.g. wrong domain) — ignore
+    }
+  });
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (!message || !message.type) return false;
 

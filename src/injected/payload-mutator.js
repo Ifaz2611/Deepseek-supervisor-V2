@@ -316,8 +316,8 @@ function sanitizeMemoryValue(value) {
  */
 export function stripAllInjectedBlocks(text) {
   let output = String(text || "");
-  output = output.replace(/<MEMORY_SYSTEM>[\s\S]*?<\/MEMORY_SYSTEM>/gi, "");
-  output = output.replace(/<dsmemory>[\s\S]*?<\/dsmemory>/gi, "");
+  output = output.replace(/<MEMORY_SYSTEM[^>]*>[\s\S]*?<\/MEMORY_SYSTEM>/gi, "");
+  output = output.replace(/<dsmemory[^>]*>[\s\S]*?<\/dsmemory>/gi, "");
   output = output.replace(/<BDS:SKILLS[\s\S]*?<\/BDS:SKILLS>/gi, "");
   output = output.replace(/<BDS:memory_calls[^>]*>[\s\S]*?<\/BDS:memory_calls>/gi, "");
   output = output.replace(/<BDS:memory_write[^>]*>[\s\S]*?<\/BDS:memory_write>/gi, "");
@@ -354,7 +354,7 @@ export function stripInjectedBlocks(text) {
   // Preserve dsmemory blocks that contain memory_calls or skills.
   // These carry context the model needs for the current turn.
   output = output.replace(
-    /<dsmemory>([\s\S]*?)<\/dsmemory>/gi,
+    /<dsmemory[^>]*>([\s\S]*?)<\/dsmemory>/gi,
     (match, content) => {
       if (/<BDS:memory_calls[\s>]/i.test(content)) return match;
       if (/<BDS:SKILLS[\s>]/i.test(content)) return match;
@@ -362,7 +362,7 @@ export function stripInjectedBlocks(text) {
     }
   );
   // Strip the system prompt (always re-injected fresh)
-  output = output.replace(/<MEMORY_SYSTEM>[\s\S]*?<\/MEMORY_SYSTEM>/gi, "");
+  output = output.replace(/<MEMORY_SYSTEM[^>]*>[\s\S]*?<\/MEMORY_SYSTEM>/gi, "");
   // Strip standalone tags outside dsmemory wrappers
   output = output.replace(/<BDS:SKILLS>[\s\S]*?<\/BDS:SKILLS>/gi, "");
   output = output.replace(

@@ -9,10 +9,11 @@
 
 import state from "./state.js";
 import { extractMemoryWritesFromBlock } from "./parser/memory-parser.js";
+import { withObserverPaused } from "./state.js";
 
 const PROCESSED_HASH = new Set();
-const TAG_REGEX = /<dsmemory>[\s\S]*?<\/dsmemory>/gi;
-const INJECTED_BLOCK_REGEX = /<MEMORY_SYSTEM>[\s\S]*?<\/MEMORY_SYSTEM>|<dsmemory>[\s\S]*?<\/dsmemory>|<BDS:SKILLS[\s\S]*?<\/BDS:SKILLS>|<BDS:memory_calls[\s\S]*?<\/BDS:memory_calls>/gi;
+const TAG_REGEX = /<dsmemory[^>]*>[\s\S]*?<\/dsmemory>/gi;
+const INJECTED_BLOCK_REGEX = /<MEMORY_SYSTEM[^>]*>[\s\S]*?<\/MEMORY_SYSTEM>|<dsmemory[^>]*>[\s\S]*?<\/dsmemory>|<BDS:SKILLS[\s\S]*?<\/BDS:SKILLS>|<BDS:memory_calls[\s\S]*?<\/BDS:memory_calls>|<BDS:memory_write[\s\S]*?<\/BDS:memory_write>/gi;
 
 /** @type {MutationObserver | null} */
 let observer = null;
@@ -60,6 +61,8 @@ export function initMemoryScanner() {
     characterData: true,
     characterDataOldValue: false,
   });
+  // Keep state.observer in sync so withObserverPaused() actually pauses the scanner
+  state.observer = observer;
 
   // Periodic scan fallback (every 2 seconds)
   periodicTimer = setInterval(() => {
@@ -79,6 +82,7 @@ export function stopMemoryScanner() {
   if (observer) {
     observer.disconnect();
     observer = null;
+    state.observer = null;
   }
   if (periodicTimer) {
     clearInterval(periodicTimer);
@@ -167,18 +171,20 @@ function processElement(element) {
 
 function hideTagsFromTextNode(textNode) {
   const text = textNode.textContent || "";
-  if (!text.includes("<dsmemory>")) return;
+  if (!text.includes("<dsmemory>") && !text.includes("BDS:memory_write")) return;
 
-  const cleaned = text.replace(TAG_REGEX, "").trim();
+  const cleaned = text.replace(TAG_REGEX, "").replace(INJECTED_BLOCK_REGEX, "").trim();
   if (cleaned !== text) {
-    if (cleaned) {
-      textNode.textContent = cleaned;
-    } else {
-      const parent = textNode.parentElement;
-      if (parent) {
-        parent.style.display = "none";
+    withObserverPaused(() => {
+      if (cleaned) {
+        textNode.textContent = cleaned;
+      } else {
+        const parent = textNode.parentElement;
+        if (parent) {
+          parent.style.display = "none";
+        }
       }
-    }
+    });
   }
 }
 
@@ -236,14 +242,16 @@ function stripTextNode(textNode) {
     .trim();
 
   if (cleaned !== text) {
-    if (cleaned) {
-      textNode.textContent = cleaned;
-    } else {
-      const parent = textNode.parentElement;
-      if (parent && !parent.classList?.contains("ds-markdown")) {
-        parent.style.display = "none";
+    withObserverPaused(() => {
+      if (cleaned) {
+        textNode.textContent = cleaned;
+      } else {
+        const parent = textNode.parentElement;
+        if (parent && !parent.classList?.contains("ds-markdown")) {
+          parent.style.display = "none";
+        }
       }
-    }
+    });
   }
 }
 

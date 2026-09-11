@@ -107,10 +107,14 @@ async function generateIcons(distDir) {
   }
   const sizes = [16, 48, 128];
   for (const size of sizes) {
-    await sharp(svgPath)
-      .resize(size, size)
-      .png()
-      .toFile(resolve(distDir, `icon${size}.png`));
+    try {
+      await sharp(svgPath)
+        .resize(size, size)
+        .png()
+        .toFile(resolve(distDir, `icon${size}.png`));
+    } catch (err) {
+      console.warn(`Icon generation failed for ${size}px:`, err.message);
+    }
   }
   console.log("Icons generated: icon16.png, icon48.png, icon128.png");
 }

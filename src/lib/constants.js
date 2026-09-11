@@ -3,6 +3,7 @@ export const STORAGE_KEYS = {
   settings: "bds_settings",
   skills: "bds_skills",
   memories: "bds_memories",
+  pendingMemoryImport: "bds_pending_memory_import",
 };
 
 // ── Bridge Events (content ↔ injected) ──

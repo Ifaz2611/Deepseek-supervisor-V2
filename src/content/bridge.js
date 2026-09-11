@@ -39,10 +39,20 @@ export async function pushConfigToPage() {
 
 export function injectHookScript() {
   if (document.getElementById(HOOK_ID)) return;
+  const src = (() => {
+    try { return chrome.runtime.getURL("injected.js"); } catch { return null; }
+  })();
+  if (!src) {
+    console.warn("[DeepSeek Supervisor] chrome.runtime.getURL failed — injected script not loaded");
+    return;
+  }
   const script = document.createElement("script");
   script.id = HOOK_ID;
-  script.src = chrome.runtime.getURL("injected.js");
+  script.src = src;
   script.async = false;
   script.onload = () => script.remove();
-  (document.head || document.documentElement).appendChild(script);
+  script.onerror = () => console.warn("[DeepSeek Supervisor] injected.js failed to load");
+  const target = document.head || document.documentElement;
+  if (target) target.appendChild(script);
+  else document.addEventListener("DOMContentLoaded", () => (document.head || document.documentElement).appendChild(script), { once: true });
 }
