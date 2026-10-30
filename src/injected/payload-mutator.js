@@ -145,9 +145,9 @@ export function setMessageText(message, text) {
  * Build the hidden prefix with skills + memory calls.
  *
  * Injection strategy:
- * - MEMORY_SYSTEM prompt: every message (ensures AI always knows the rules)
+ * - MEMORY_SYSTEM prompt: every message (ensures AI always knows the rules, unless memory disabled)
  * - Skills: only on first turn OR when skill set has changed
- * - Memory calls: every turn (all memories injected for full context)
+ * - Memory calls: every turn (all memories injected for full context, unless memory disabled)
  */
 export function buildHiddenPrefix(
   userPrompt,
@@ -159,9 +159,11 @@ export function buildHiddenPrefix(
 ) {
   const blocks = [];
 
-  // System prompt: inject on every message so AI always has the memory rules.
-  const systemPrompt = buildMemorySystemPrompt();
-  if (systemPrompt) blocks.push(systemPrompt);
+  // System prompt: inject on every message so AI always has the memory rules (unless memory is disabled).
+  if (!state.config.disableMemory) {
+    const systemPrompt = buildMemorySystemPrompt();
+    if (systemPrompt) blocks.push(systemPrompt);
+  }
 
   // Skills: inject on first turn OR when skill set has changed.
   const currentSkillsFingerprint = getSkillsFingerprint(state.config.skills);
@@ -243,14 +245,30 @@ CRITICAL RULES - FOLLOW EXACTLY:
 }
 
 /**
- * Generate a semi-stable fingerprint for a set of skills.
+ * Generate a stable fingerprint for a set of skills.
+ *
+ * The fingerprint must change whenever a skill's name or content changes.
+ * Using only content length (as before) meant that editing a skill without
+ * changing its length never triggered a re-injection, so the model kept the
+ * old instructions. The hash also keeps the value safe to embed in an XML
+ * attribute (skill names may contain quotes).
  */
 export function getSkillsFingerprint(skills) {
   if (!Array.isArray(skills) || !skills.length) return "";
   return skills
-    .map((s) => `${s.name}:${(s.content || "").length}`)
+    .map((s) => hashString(`${s && s.name ? s.name : ""}\u0000${(s && s.content) || ""}`))
     .sort()
-    .join("|");
+    .join("-");
+}
+
+function hashString(value) {
+  const text = String(value || "");
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(36);
 }
 
 /**
@@ -309,19 +327,24 @@ function sanitizeMemoryValue(value) {
   return String(value).replace(/<\//g, '<\\/').trim();
 }
 
-/**
- * Strip ALL injected blocks from text — used when cleaning API responses
- * (chat history) so the user never sees raw tags.
- * Unlike stripInjectedBlocks, this preserves NOTHING injected.
- */
-export function stripAllInjectedBlocks(text) {
+function removeInjectedBlocks(text) {
   let output = String(text || "");
+  // dsmemory wrappers are removed first, which also removes any skills/calls
+  // nested inside them. The remaining rules cover standalone tags.
   output = output.replace(/<MEMORY_SYSTEM[^>]*>[\s\S]*?<\/MEMORY_SYSTEM>/gi, "");
   output = output.replace(/<dsmemory[^>]*>[\s\S]*?<\/dsmemory>/gi, "");
   output = output.replace(/<BDS:SKILLS[\s\S]*?<\/BDS:SKILLS>/gi, "");
   output = output.replace(/<BDS:memory_calls[^>]*>[\s\S]*?<\/BDS:memory_calls>/gi, "");
   output = output.replace(/<BDS:memory_write[^>]*>[\s\S]*?<\/BDS:memory_write>/gi, "");
-  return output.replace(/\n{3,}/g, "\n\n").trim();
+  return output;
+}
+
+/**
+ * Strip ALL injected blocks from text — used when cleaning API responses
+ * (chat history) so the user never sees raw tags.
+ */
+export function stripAllInjectedBlocks(text) {
+  return removeInjectedBlocks(text).replace(/\n{3,}/g, "\n\n").trim();
 }
 
 /**
@@ -348,26 +371,15 @@ export function stripBlocksFromJsonValue(value) {
   return value;
 }
 
-
+/**
+ * Strip injected blocks from the text of the message about to be sent.
+ *
+ * Everything is removed (including dsmemory wrappers) because
+ * buildHiddenPrefix() re-injects a fresh system prompt, fresh memory calls,
+ * and (when needed) fresh skills. Preserving the old blocks used to leave a
+ * half-stripped `<dsmemory></dsmemory>` shell behind and could duplicate
+ * stale memories in the prompt.
+ */
 export function stripInjectedBlocks(text) {
-  let output = String(text || "");
-  // Preserve dsmemory blocks that contain memory_calls or skills.
-  // These carry context the model needs for the current turn.
-  output = output.replace(
-    /<dsmemory[^>]*>([\s\S]*?)<\/dsmemory>/gi,
-    (match, content) => {
-      if (/<BDS:memory_calls[\s>]/i.test(content)) return match;
-      if (/<BDS:SKILLS[\s>]/i.test(content)) return match;
-      return "";
-    }
-  );
-  // Strip the system prompt (always re-injected fresh)
-  output = output.replace(/<MEMORY_SYSTEM[^>]*>[\s\S]*?<\/MEMORY_SYSTEM>/gi, "");
-  // Strip standalone tags outside dsmemory wrappers
-  output = output.replace(/<BDS:SKILLS>[\s\S]*?<\/BDS:SKILLS>/gi, "");
-  output = output.replace(
-    /<BDS:memory_calls[^>]*>[\s\S]*?<\/BDS:memory_calls>/gi,
-    ""
-  );
-  return output.trim();
+  return removeInjectedBlocks(text).trim();
 }

@@ -7,9 +7,9 @@
  * 2. Strip injected blocks from the chat DOM so users never see raw tags.
  */
 
-import state from "./state.js";
+import state, { CHAT_OBSERVER_OPTIONS, withObserverPaused } from "./state.js";
 import { extractMemoryWritesFromBlock } from "./parser/memory-parser.js";
-import { withObserverPaused } from "./state.js";
+import { pushConfigToPage } from "./bridge.js";
 
 const PROCESSED_HASH = new Set();
 const TAG_REGEX = /<dsmemory[^>]*>[\s\S]*?<\/dsmemory>/gi;
@@ -55,12 +55,7 @@ export function initMemoryScanner() {
     }
   });
 
-  observer.observe(document.body, {
-    subtree: true,
-    childList: true,
-    characterData: true,
-    characterDataOldValue: false,
-  });
+  observer.observe(document.body, CHAT_OBSERVER_OPTIONS);
   // Keep state.observer in sync so withObserverPaused() actually pauses the scanner
   state.observer = observer;
 
@@ -171,16 +166,15 @@ function processElement(element) {
 
 function hideTagsFromTextNode(textNode) {
   const text = textNode.textContent || "";
-  if (!text.includes("<dsmemory>") && !text.includes("BDS:memory_write")) return;
+  if (!text.includes("dsmemory") && !text.includes("BDS:memory_write")) return;
 
   const cleaned = text.replace(TAG_REGEX, "").replace(INJECTED_BLOCK_REGEX, "").trim();
   if (cleaned !== text) {
     withObserverPaused(() => {
-      if (cleaned) {
-        textNode.textContent = cleaned;
-      } else {
+      textNode.textContent = cleaned;
+      if (!cleaned) {
         const parent = textNode.parentElement;
-        if (parent) {
+        if (parent && !parent.classList?.contains("ds-markdown")) {
           parent.style.display = "none";
         }
       }
@@ -243,9 +237,8 @@ function stripTextNode(textNode) {
 
   if (cleaned !== text) {
     withObserverPaused(() => {
-      if (cleaned) {
-        textNode.textContent = cleaned;
-      } else {
+      textNode.textContent = cleaned;
+      if (!cleaned) {
         const parent = textNode.parentElement;
         if (parent && !parent.classList?.contains("ds-markdown")) {
           parent.style.display = "none";
@@ -272,24 +265,31 @@ function stripFromTextWalker(root) {
     }
   );
 
+  const textNodes = [];
   let textNode;
   while ((textNode = walker.nextNode())) {
-    const text = textNode.textContent || "";
-    const cleaned = text
-      .replace(INJECTED_BLOCK_REGEX, "")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
-    if (cleaned !== text && text.length < 50000) {
-      if (cleaned) {
-        textNode.textContent = cleaned;
-      } else {
-        const parent = textNode.parentElement;
+    textNodes.push(textNode);
+  }
+  if (textNodes.length === 0) return;
+
+  // Batch the DOM writes so the scanner does not observe its own cleanup.
+  withObserverPaused(() => {
+    for (const node of textNodes) {
+      const text = node.textContent || "";
+      const cleaned = text
+        .replace(INJECTED_BLOCK_REGEX, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+      if (cleaned === text || text.length >= 50000) continue;
+      node.textContent = cleaned;
+      if (!cleaned) {
+        const parent = node.parentElement;
         if (parent && !parent.classList?.contains("ds-markdown")) {
           parent.style.display = "none";
         }
       }
     }
-  }
+  });
 }
 
 // ── Memory Write Saving ──
@@ -333,7 +333,13 @@ async function saveMemoryWrites(writes) {
       if (!isValidMemoryWrite(write, existing)) continue;
 
       const existingEntry = existing[write.key];
-      if (existingEntry && existingEntry.value === write.value) continue;
+      if (
+        existingEntry &&
+        existingEntry.value === write.value &&
+        existingEntry.importance === write.importance
+      ) {
+        continue;
+      }
 
       existing[write.key] = {
         value: write.value,
@@ -348,6 +354,12 @@ async function saveMemoryWrites(writes) {
 
       const { saveMemoriesToStorage } = await import("./storage.js");
       await saveMemoriesToStorage(existing);
+
+      pushConfigToPage();
+
+      // IndexedDB writes do not emit a chrome.storage change event, so refresh
+      // the open Memory panel explicitly.
+      if (state.ui) state.ui.refreshMemories();
 
       if (savedKeys.length > 0) {
         showInlineNotification(savedKeys);

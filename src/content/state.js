@@ -19,6 +19,19 @@ const state = {
 };
 
 /**
+ * Full MutationObserver options for the chat DOM. Keep this in one place:
+ * calling observe() again (as withObserverPaused does) replaces the previous
+ * options, so re-observing without `characterData` would silently stop
+ * streaming-text detection.
+ */
+export const CHAT_OBSERVER_OPTIONS = {
+  subtree: true,
+  childList: true,
+  characterData: true,
+  characterDataOldValue: false,
+};
+
+/**
  * Run `fn` with the chat-DOM MutationObserver paused so that DOM mutations
  * the extension itself causes don't re-trigger scan handlers.
  */
@@ -29,7 +42,7 @@ export function withObserverPaused(fn) {
     return fn();
   } finally {
     if (observer && document.body) {
-      observer.observe(document.body, { subtree: true, childList: true });
+      observer.observe(document.body, CHAT_OBSERVER_OPTIONS);
     }
   }
 }

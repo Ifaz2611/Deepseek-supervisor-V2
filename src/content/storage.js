@@ -9,6 +9,7 @@ import state from "./state.js";
 import { pushConfigToPage } from "./bridge.js";
 import { STORAGE_KEYS, DEFAULT_SETTINGS } from "../lib/constants.js";
 import { i18n } from "../lib/i18n.svelte.js";
+import { makeId } from "../lib/utils/helpers.js";
 import {
   loadMemories as loadMemoriesFromIDB,
   saveMemoriesBatch,
@@ -167,7 +168,9 @@ export function normalizeSkills(raw) {
 
   return raw
     .map((item) => ({
-      id: String(item && item.id ? item.id : ""),
+      // Legacy skill records may not have an id. Generate one so Svelte's
+      // keyed {#each ... (skill.id)} never sees duplicate "" keys.
+      id: String(item && item.id ? item.id : makeId()),
       name: String(item && item.name ? item.name : "Skill"),
       usage: String(item && item.usage ? item.usage : ""),
       content: String(item && item.content ? item.content : ""),

@@ -21,10 +21,13 @@ export function patchFetch(state, isChatCompletionUrl, requestFreshConfig) {
           const cleaned = stripBlocksFromJsonValue(data);
           window.dispatchEvent(new CustomEvent("dsm:sd", { detail: JSON.stringify(cleaned) }));
           // Return a new Response with cleaned data
+          const headers = new Headers(response.headers);
+          headers.delete("content-length");
+          headers.delete("content-encoding");
           return new Response(JSON.stringify(cleaned), {
             status: response.status,
             statusText: response.statusText,
-            headers: response.headers,
+            headers,
           });
         } catch (e) {
           return response;

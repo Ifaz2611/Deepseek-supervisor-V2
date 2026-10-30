@@ -69,7 +69,12 @@
       [STORAGE_KEYS.pendingMemoryImport]: combined
     });
 
-    window.location.href = "https://chat.deepseek.com/";
+    onclose();
+    if (window.location.href === "https://chat.deepseek.com/" || window.location.href === "https://chat.deepseek.com") {
+      window.location.reload();
+    } else {
+      window.location.href = "https://chat.deepseek.com/";
+    }
   }
 </script>
 
@@ -95,7 +100,7 @@
         </svg>
         <span class="bds-mi-title">{t('memoryImport.title')}</span>
       </div>
-      <button class="bds-mi-close-btn" onclick={onclose} aria-label="Close">
+      <button class="bds-mi-close-btn" onclick={onclose} aria-label={t('common.close')}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/>
           <line x1="6" y1="6" x2="18" y2="18"/>

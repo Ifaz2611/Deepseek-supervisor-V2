@@ -79,27 +79,54 @@ async function handlePendingMemoryImport() {
   try {
     const data = await chrome.storage.local.get([STORAGE_KEYS.pendingMemoryImport]);
     const pending = data[STORAGE_KEYS.pendingMemoryImport];
-    if (pending && typeof pending === "string" && pending.trim()) {
-      await chrome.storage.local.remove([STORAGE_KEYS.pendingMemoryImport]);
-      // Inject the import prompt into the chat input after a short delay
-      setTimeout(() => {
-        const input = document.querySelector('textarea[placeholder], div[contenteditable="true"], #chat-input, textarea');
-        if (input) {
-          const value = pending.trim();
-          if (input.tagName === "TEXTAREA" || input.tagName === "INPUT") {
-            input.value = value;
-            input.dispatchEvent(new Event("input", { bubbles: true }));
-            input.focus();
-          } else if (input.isContentEditable) {
-            input.textContent = value;
-            input.dispatchEvent(new Event("input", { bubbles: true }));
-            input.focus();
-          }
-          if (state.ui) state.ui.showToast("Memory import ready — press Send to process.");
-        }
-      }, 1200);
-    }
+    if (!pending || typeof pending !== "string" || !pending.trim()) return;
+
+    // Only clear the pending import after it has actually been inserted.
+    // The chat input may not exist yet when the content script starts, so
+    // poll briefly instead of deleting the prompt and losing it.
+    const injected = await fillChatInput(pending.trim());
+    if (!injected) return;
+
+    await chrome.storage.local.remove([STORAGE_KEYS.pendingMemoryImport]);
+    if (state.ui) state.ui.showToast("Memory import ready — press Send to process.");
   } catch (_) {}
+}
+
+async function fillChatInput(value, attempts = 20) {
+  const selector = 'textarea[placeholder], div[contenteditable="true"], #chat-input, textarea';
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const input = document.querySelector(selector);
+    if (input) {
+      if (input.tagName === "TEXTAREA" || input.tagName === "INPUT") {
+        input.focus();
+        const proto = input.tagName === "TEXTAREA"
+          ? window.HTMLTextAreaElement.prototype
+          : window.HTMLInputElement.prototype;
+        const nativeSetter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
+        if (nativeSetter) {
+          nativeSetter.call(input, value);
+        } else {
+          input.value = value;
+        }
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        return true;
+      }
+      if (input.isContentEditable) {
+        input.focus();
+        if (typeof document.execCommand === "function") {
+          document.execCommand("selectAll", false, null);
+          document.execCommand("insertText", false, value);
+        } else {
+          input.textContent = value;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+        return true;
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  return false;
 }
 
 async function waitForBody() {

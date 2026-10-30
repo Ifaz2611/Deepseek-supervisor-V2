@@ -6,7 +6,9 @@
  */
 
 const MEMORY_WRITE_REGEX =
-  /<BDS:memory_write\s+key="([^"]+)"\s+importance="(always|called)">([\s\S]*?)<\/BDS:memory_write>/gi;
+  /<BDS:memory_write\b([^>]*)>([\s\S]*?)<\/BDS:memory_write>/gi;
+
+const ATTRIBUTE_REGEX = /([a-z_][\w-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
 
 /**
  * @param {string} text - Raw text from an assistant message
@@ -22,9 +24,12 @@ export function extractMemoryWrites(text) {
   MEMORY_WRITE_REGEX.lastIndex = 0;
 
   while ((match = MEMORY_WRITE_REGEX.exec(text)) !== null) {
-    const key = sanitizeKey(match[1]);
-    const importance = match[2].toLowerCase() === "always" ? "always" : "called";
-    const value = match[3].trim();
+    const attrs = parseAttributes(match[1]);
+    const key = sanitizeKey(attrs.key);
+    const importance = String(attrs.importance || "called").toLowerCase() === "always"
+      ? "always"
+      : "called";
+    const value = match[2].trim();
 
     if (key && value) {
       writes.push({ key, value, importance });
@@ -35,30 +40,56 @@ export function extractMemoryWrites(text) {
 }
 
 /**
- * Also extract memory writes wrapped in <dsmemory> tags.
+ * Parse tag attributes in any order (models do not always follow the exact
+ * order shown in the prompt).
+ */
+function parseAttributes(source) {
+  const attrs = {};
+  ATTRIBUTE_REGEX.lastIndex = 0;
+  let match;
+  while ((match = ATTRIBUTE_REGEX.exec(source || "")) !== null) {
+    attrs[match[1].toLowerCase()] = match[2] !== undefined ? match[2] : match[3];
+  }
+  return attrs;
+}
+
+/**
+ * Also extract memory writes wrapped in <dsmemory> tags,
+ * as well as any JSON arrays inside <dsmemory> tags.
  */
 export function extractMemoryWritesFromBlock(text) {
   if (!text || typeof text !== "string") return [];
 
-  const blockRegex = /<dsmemory>([\s\S]*?)<\/dsmemory>/gi;
-  let allWrites = [];
+  const writes = extractMemoryWrites(text);
+  const seenKeys = new Set(writes.map((w) => w.key));
+
+  // Also check for JSON array inside <dsmemory> tags (e.g. from memory export)
+  const dsmemoryRegex = /<dsmemory[^>]*>([\s\S]*?)<\/dsmemory>/gi;
   let blockMatch;
-
-  blockRegex.lastIndex = 0;
-
-  while ((blockMatch = blockRegex.exec(text)) !== null) {
-    const blockContent = blockMatch[1];
-    // Only extract memory_write tags, NOT memory_calls
-    const writes = extractMemoryWrites(blockContent);
-    allWrites = allWrites.concat(writes);
+  while ((blockMatch = dsmemoryRegex.exec(text)) !== null) {
+    const content = blockMatch[1].trim();
+    if (content.startsWith("[") && content.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed)) {
+          for (const item of parsed) {
+            if (!item || typeof item !== "object") continue;
+            const key = sanitizeKey(item.key);
+            const value = String(item.value || "").trim();
+            const importance = String(item.importance || "called").toLowerCase() === "always"
+              ? "always"
+              : "called";
+            if (key && value && !seenKeys.has(key)) {
+              seenKeys.add(key);
+              writes.push({ key, value, importance });
+            }
+          }
+        }
+      } catch (_) {}
+    }
   }
 
-  // Also check outside of dsmemory tags (fallback)
-  if (allWrites.length === 0) {
-    allWrites = extractMemoryWrites(text);
-  }
-
-  return allWrites;
+  return writes;
 }
 
 function sanitizeKey(input) {

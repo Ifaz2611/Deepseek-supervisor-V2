@@ -58,6 +58,7 @@
         if (!Array.isArray(parsed)) throw new Error("Not an array");
         let count = 0;
         for (const item of parsed) {
+          if (!item || typeof item !== "object") continue;
           if (!item.content || !String(item.content).trim()) continue;
           appState.skills.push({
             id: makeId(),
@@ -134,16 +135,20 @@
   async function saveEdit() {
     const skill = appState.skills.find(s => s.id === editingId);
     if (skill) {
-      skill.name = editingName;
-      skill.usage = editingUsage;
-      skill.content = editingContent;
-      
+      const trimmedName = editingName.trim();
+      const trimmedContent = editingContent.trim();
+      if (!trimmedName || !trimmedContent) return;
+
+      skill.name = trimmedName;
+      skill.usage = editingUsage.trim();
+      skill.content = trimmedContent;
+
       await chrome.storage.local.set({
         [STORAGE_KEYS.skills]: appState.skills,
       });
       skills = [...appState.skills];
       pushConfigToPage();
-      
+
       if (appState.ui) {
         appState.ui.showToast(t('skillList.saved'));
       }

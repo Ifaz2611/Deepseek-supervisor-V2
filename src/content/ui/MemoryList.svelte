@@ -54,7 +54,8 @@
 
         // Merge into existing memories and persist
         const merged = { ...appState.memories, ...normalized };
-        await saveMemoriesToStorage(merged);
+        const saved = await saveMemoriesToStorage(merged);
+        if (!saved) throw new Error("save failed");
         appState.memories = merged;
         entries = Object.entries(merged).sort((a, b) => a[0].localeCompare(b[0]));
         pushConfigToPage();
@@ -74,7 +75,12 @@
 
   async function deleteMemory(key) {
     if (!appState.settings?.skipDeletionConfirmation) {
-      if (!window.confirm(`Delete memory "${key}"?`)) return;
+      confirmActive = true;
+      try {
+        if (!window.confirm(`Delete memory "${key}"?`)) return;
+      } finally {
+        confirmActive = false;
+      }
     }
     delete appState.memories[key];
     await deleteSingleMemory(key);
@@ -99,8 +105,14 @@
 
   async function saveEdit() {
     if (!editingKey || !editingValue.trim()) return;
-    appState.memories[editingKey].value = editingValue.trim();
-    appState.memories[editingKey].importance = editingImportance;
+    const entry = appState.memories[editingKey];
+    if (!entry) {
+      // The entry may have been removed in another tab while the modal was open.
+      cancelEdit();
+      return;
+    }
+    entry.value = editingValue.trim();
+    entry.importance = editingImportance;
     await saveMemoriesToStorage(appState.memories);
     entries = Object.entries(appState.memories).sort((a, b) => a[0].localeCompare(b[0]));
     pushConfigToPage();
@@ -115,12 +127,12 @@
   }
 
   function handleKeydown(e) {
-    if (e.key === "Escape" && !confirmActive) showPopup = false;
+    if (e.key === "Escape" && !confirmActive && !editingKey) showPopup = false;
   }
 
   onMount(() => {
     function handleClick(e) {
-      if (showPopup && !confirmActive && popupRef && !popupRef.contains(e.target)) {
+      if (showPopup && !confirmActive && !editingKey && popupRef && !popupRef.contains(e.target)) {
         showPopup = false;
       }
     }
@@ -128,6 +140,8 @@
     return () => window.removeEventListener("click", handleClick, true);
   });
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="bds-section-title">
   <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
@@ -144,11 +158,9 @@
     <div style="display: flex; gap: 6px;">
       <button type="button" class="bds-btn-outlined" onclick={exportMemories}>
         {t('memoryList.export')}
-        
       </button>
       <button type="button" class="bds-btn-outlined" onclick={triggerImport}>
         {t('memoryList.import')}
-        
       </button>
       <input 
         id="bds-memory-upload"
@@ -161,8 +173,6 @@
     </div>
   </div>
 </div>
-
-<svelte:window onkeydown={handleKeydown} />
 
 <div id="bds-memory-list" class="bds-list">
   {#if entries.length === 0}
