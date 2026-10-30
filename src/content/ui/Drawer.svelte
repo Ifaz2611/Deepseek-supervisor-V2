@@ -12,6 +12,13 @@
   let memoryRef = $state(null);
   let activeTab = $state("settings");
 
+  let activeSkillsCount = $derived(
+    Array.isArray(appState.skills) ? appState.skills.filter((s) => s.active).length : 0
+  );
+  let memoriesCount = $derived(
+    appState.memories ? Object.keys(appState.memories).length : 0
+  );
+
   export function refreshSettings() { if (settingsRef) settingsRef.refresh(); }
   export function refreshSkills() { if (skillsRef) skillsRef.refresh(); }
   export function refreshMemories() { if (memoryRef) memoryRef.refresh(); }
@@ -36,31 +43,104 @@
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="dsm-overlay" onclick={handleOverlay}>
-    <div class="dsm-modal">
+    <div class="dsm-modal" role="dialog" aria-modal="true" aria-labelledby="dsm-title-text">
+      <!-- Modal Header -->
       <div class="dsm-header">
-        <h2 class="dsm-title">{t('drawer.title')}</h2>
-        <button class="dsm-close" type="button" onclick={handleClose} aria-label={t('common.close')}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14.187 13.127l-1.06 1.06L1.813 2.873l1.06-1.06z" fill="currentColor"/><path d="M13.127 1.813l1.06 1.06L2.873 14.187l-1.06-1.06z" fill="currentColor"/></svg>
+        <div class="dsm-header-brand">
+          <div class="dsm-logo-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a5 5 0 0 0-5 5v1a4 4 0 0 0-3 3.86 4.5 4.5 0 0 0 2 3.86V17a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-1.28a4.5 4.5 0 0 0 2-3.86 4 4 0 0 0-3-3.86V7a5 5 0 0 0-5-5z"></path>
+              <line x1="12" y1="2" x2="12" y2="8"></line>
+              <line x1="9" y1="12" x2="15" y2="12"></line>
+              <line x1="9" y1="16" x2="15" y2="16"></line>
+            </svg>
+          </div>
+          <div>
+            <div class="dsm-header-title-row">
+              <h2 id="dsm-title-text" class="dsm-title">{t('drawer.title')}</h2>
+              <span class="dsm-badge-v2">V2.0</span>
+            </div>
+            <div class="dsm-header-subtitle">
+              <span class="dsm-pulse-indicator"></span>
+              {#if !appState.settings?.disableMemory}
+                <span>Memory Active ({memoriesCount} facts)</span>
+              {:else}
+                <span>Memory Paused</span>
+              {/if}
+            </div>
+          </div>
+        </div>
+
+        <button class="dsm-close" type="button" onclick={handleClose} aria-label={t('common.close')} title="Close (Esc)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
+
+      <!-- Modal Body -->
       <div class="dsm-body">
-        <nav class="dsm-sidebar">
-          <button class="dsm-nav" class:dsm-nav-active={activeTab === "settings"} onclick={() => activeTab = "settings"}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            <span>{t('drawer.sectionSettings')}</span>
+        <nav class="dsm-sidebar" aria-label="Settings navigation">
+          <button
+            class="dsm-nav"
+            class:dsm-nav-active={activeTab === "settings"}
+            onclick={() => activeTab = "settings"}
+            type="button"
+          >
+            <span class="dsm-nav-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </span>
+            <span class="dsm-nav-label">{t('drawer.sectionSettings')}</span>
           </button>
-          <button class="dsm-nav" class:dsm-nav-active={activeTab === "skills"} onclick={() => activeTab = "skills"}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <span>{t('drawer.sectionSkills')}</span>
+
+          <button
+            class="dsm-nav"
+            class:dsm-nav-active={activeTab === "skills"}
+            onclick={() => activeTab = "skills"}
+            type="button"
+          >
+            <span class="dsm-nav-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+              </svg>
+            </span>
+            <span class="dsm-nav-label">{t('drawer.sectionSkills')}</span>
+            {#if activeSkillsCount > 0}
+              <span class="dsm-nav-count">{activeSkillsCount}</span>
+            {/if}
           </button>
-          <button class="dsm-nav" class:dsm-nav-active={activeTab === "memory"} onclick={() => activeTab = "memory"}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-10 10c0 5.52 4.48 10 10 10s10-4.48 10-10C22 6.48 17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
-            <span>{t('drawer.sectionMemories')}</span>
+
+          <button
+            class="dsm-nav"
+            class:dsm-nav-active={activeTab === "memory"}
+            onclick={() => activeTab = "memory"}
+            type="button"
+          >
+            <span class="dsm-nav-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 6v6l4 2"></path>
+              </svg>
+            </span>
+            <span class="dsm-nav-label">{t('drawer.sectionMemories')}</span>
+            {#if memoriesCount > 0}
+              <span class="dsm-nav-count">{memoriesCount}</span>
+            {/if}
           </button>
         </nav>
+
         <div class="dsm-content">
           {#if activeTab === "settings"}
-            <SettingsPanel bind:this={settingsRef} onimportdata={() => { refreshSettings(); refreshSkills(); refreshMemories(); }} />
+            <SettingsPanel
+              bind:this={settingsRef}
+              onimportdata={() => { refreshSettings(); refreshSkills(); refreshMemories(); }}
+            />
           {:else if activeTab === "skills"}
             <SkillList bind:this={skillsRef} />
           {:else if activeTab === "memory"}

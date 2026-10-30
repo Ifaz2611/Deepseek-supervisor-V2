@@ -133,7 +133,7 @@
   }
 
   async function saveEdit() {
-    const skill = appState.skills.find(s => s.id === editingId);
+    const skill = appState.skills.find((s) => s.id === editingId);
     if (skill) {
       const trimmedName = editingName.trim();
       const trimmedContent = editingContent.trim();
@@ -164,7 +164,6 @@
       return;
     }
 
-    // Basic URL validation
     try {
       new URL(url);
     } catch {
@@ -197,11 +196,10 @@
         return;
       }
 
-      // Add as a new skill
       appState.skills.push({
         id: makeId(),
         name,
-        usage: url, // Store the source URL in usage field
+        usage: url,
         content,
         active: true,
       });
@@ -223,126 +221,195 @@
   }
 </script>
 
-<div class="bds-section-title">
-  <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-    <div style="display: flex; align-items: center;">
-      <span class="bds-icon-inline">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M12.0997 8.54554C12.2905 8.54989 12.3541 8.58056 12.4535 8.74614L12.8849 9.46387C12.9851 9.63071 13.0464 9.66013 13.2388 9.66447H14.1138C14.3417 9.66448 14.3512 9.66937 14.4686 9.86507L14.892 10.5717C14.9942 10.7422 14.9948 10.8247 14.892 10.9961L14.4756 11.6906C14.3741 11.8677 14.3694 11.9379 14.4756 12.115L14.892 12.8096C14.9942 12.9801 14.9947 13.0625 14.892 13.234L14.4686 13.9406C14.3643 14.1028 14.3063 14.1354 14.1138 14.1412H13.2388C13.0465 14.1456 12.985 14.1752 12.8849 14.3418L12.4535 15.0595C12.353 15.2195 12.2895 15.2558 12.0997 15.2601H11.2237C10.9962 15.2601 10.9871 15.2548 10.8699 15.0595L10.4384 14.3418C10.3383 14.175 10.2767 14.1456 10.0846 14.1412H9.2096C9.01854 14.1355 8.95761 14.1006 8.85477 13.9406L8.43139 13.234C8.32562 13.0576 8.33148 12.9862 8.43139 12.8096L8.84771 12.115C8.95165 11.9416 8.94659 11.863 8.84771 11.6906L8.43139 10.9961C8.32767 10.8232 8.33411 10.7437 8.43139 10.5717L8.85477 9.86507C8.95447 9.69891 9.01875 9.67017 9.2096 9.66447H10.0846C10.2741 9.66441 10.3414 9.62547 10.4384 9.46387L10.8699 8.74614C10.987 8.55106 10.9963 8.54554 11.2237 8.54554H12.0997ZM11.6612 10.232C11.3326 10.7798 10.8155 11.0948 10.1743 11.106C10.4443 11.61 10.4425 12.1976 10.1743 12.6987C10.803 12.7096 11.3391 13.0359 11.6612 13.5727C11.9855 13.0323 12.5131 12.7098 13.148 12.6987C12.879 12.196 12.879 11.6086 13.148 11.106C12.5076 11.0948 11.9894 10.7794 11.6612 10.232Z" fill="currentColor"></path>
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.51205 0.790627C9.19055 0.790649 10.7401 1.0691 11.892 1.54364C12.4664 1.78029 12.9719 2.07885 13.3436 2.4408C13.7171 2.80467 13.9916 3.27253 13.9918 3.82384V7.90442C13.6067 7.69532 13.1907 7.53597 12.7529 7.43366V5.66454C12.4928 5.82898 12.2028 5.97601 11.892 6.10405C10.74 6.57865 9.19071 6.85706 7.51205 6.85706C5.8337 6.85703 4.285 6.57852 3.13309 6.10405C2.82215 5.97593 2.53164 5.8291 2.27121 5.66454V7.4135C2.27134 7.75678 2.6066 8.27106 3.62502 8.73405C4.58641 9.17097 5.95762 9.45591 7.50499 9.45681C7.24582 9.83133 7.03684 10.2434 6.88706 10.6826C5.44388 10.6162 4.12516 10.3216 3.11192 9.86104C2.81708 9.72698 2.53185 9.56866 2.27121 9.38928V11.2542C2.27158 11.5974 2.60697 12.1109 3.62502 12.5737C4.41933 12.9347 5.4937 13.1898 6.71569 13.2693C6.80349 13.7128 6.9513 14.1345 7.14814 14.5273C5.60324 14.4862 4.18593 14.1889 3.11192 13.7007C2.01039 13.1998 1.03366 12.3814 1.03333 11.2542V3.82384C1.03352 3.27273 1.30721 2.80461 1.68049 2.4408C2.05211 2.07893 2.55887 1.78026 3.13309 1.54364C4.28492 1.06926 5.83393 0.790683 7.51205 0.790627ZM7.51205 2.02851C5.95492 2.02857 4.57354 2.29079 3.60486 2.68979C3.11958 2.88977 2.76667 3.11253 2.5454 3.32788C2.32671 3.54101 2.2714 3.7089 2.27121 3.82384C2.27121 3.93882 2.32624 4.10625 2.5454 4.3198C2.76667 4.53527 3.11927 4.75781 3.60486 4.9579C4.5736 5.35699 5.95467 5.61914 7.51205 5.61918C9.06942 5.61918 10.4505 5.35695 11.4192 4.9579C11.9051 4.75773 12.2584 4.53536 12.4797 4.3198C12.6988 4.10627 12.7529 3.93882 12.7529 3.82384C12.7527 3.70889 12.6984 3.54104 12.4797 3.32788C12.2584 3.11239 11.9049 2.88989 11.4192 2.68979C10.4505 2.29079 9.06925 2.02853 7.51205 2.02851Z" fill="currentColor"></path>
+<div class="bds-panel-container">
+  <!-- Top Bar -->
+  <div class="bds-section-header-row">
+    <div>
+      <h3 class="bds-panel-heading">{t('skillList.title')}</h3>
+      <p class="bds-panel-subheading">Inject custom system prompts, workflows & personas</p>
+    </div>
+
+    <div class="bds-header-actions">
+      <button type="button" class="bds-action-btn bds-action-btn-outline" onclick={exportSkills} title="Export skills JSON">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>{t('skillList.export')}</span>
+      </button>
+
+      <button type="button" class="bds-action-btn bds-action-btn-primary" onclick={triggerImport} title="Upload Markdown or JSON file">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <span>{t('skillList.import')}</span>
+      </button>
+
+      <input
+        id="bds-skill-upload"
+        type="file"
+        accept=".md,.json"
+        bind:this={uploadInput}
+        onchange={handleUpload}
+        style="display: none;"
+      />
+    </div>
+  </div>
+
+  <!-- Remote URL Importer -->
+  <div class="bds-url-import-card">
+    <div class="bds-url-input-wrap">
+      <span class="bds-url-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
         </svg>
       </span>
-      {t('skillList.title')}
-    </div>
-
-    <div style="display: flex; gap: 6px;">
-      <button type="button" class="bds-btn-outlined" onclick={exportSkills}>
-        {t('skillList.export')}
+      <input
+        class="bds-url-input"
+        type="url"
+        placeholder={t('skillList.urlPlaceholder')}
+        bind:value={skillUrl}
+        disabled={urlLoading}
+        onkeydown={(e) => { if (e.key === "Enter") fetchAndAddSkill(); }}
+      />
+      <button
+        type="button"
+        class="bds-url-fetch-btn"
+        onclick={fetchAndAddSkill}
+        disabled={urlLoading}
+      >
+        {#if urlLoading}
+          <span class="bds-spinner"></span>
+          <span>{t('skillList.urlFetching')}</span>
+        {:else}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>{t('skillList.urlFetch')}</span>
+        {/if}
       </button>
-      <button type="button" class="bds-btn-outlined" onclick={triggerImport}>
-        {t('skillList.import')}
-      </button>
     </div>
+    {#if urlError}
+      <p class="bds-field-error">{urlError}</p>
+    {/if}
   </div>
-</div>
 
-<div style="margin-top: 16px;">
-  <label class="bds-label" for="bds-skill-upload">{t('skillList.uploadLabel')}</label>
-  <input
-    id="bds-skill-upload"
-    type="file"
-    accept=".md,.json"
-    bind:this={uploadInput}
-    onchange={handleUpload}
-    style="margin-top: 6px;"
-  />
-</div>
-
-<div style="margin-top: 12px;">
-  <!-- svelte-ignore a11y_label_has_associated_control -->
-  <label class="bds-label">{t('skillList.urlLabel')}</label>
-  <div style="display: flex; gap: 6px; margin-top: 6px;">
-    <input
-      class="bds-input"
-      type="url"
-      placeholder={t('skillList.urlPlaceholder')}
-      bind:value={skillUrl}
-      disabled={urlLoading}
-      onkeydown={(e) => { if (e.key === "Enter") fetchAndAddSkill(); }}
-      style="flex: 1;"
-    />
-    <button
-      type="button"
-      class="bds-btn-outlined"
-      onclick={fetchAndAddSkill}
-      disabled={urlLoading}
-    >
-      {#if urlLoading}
-        {t('skillList.urlFetching')}
-      {:else}
-        {t('skillList.urlFetch')}
-      {/if}
-    </button>
-  </div>
-  {#if urlError}
-    <p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{urlError}</p>
-  {/if}
-</div>
-
-<div id="bds-skill-list" class="bds-list">
-  {#if skills.length === 0}
-    <p class="bds-empty">{t('skillList.empty')}</p>
-  {:else}
-    {#each skills as skill (skill.id)}
-      {#if editingId === skill.id}
-        <div class="bds-inline-editor">
-          <input 
-            class="bds-input" 
-            bind:value={editingName} 
-            placeholder={t('skillList.namePlaceholder')}
-          />
-          <input 
-            class="bds-input" 
-            bind:value={editingUsage} 
-            placeholder={t('skillList.usagePlaceholder')}
-          />
-          <textarea 
-            class="bds-input" 
-            bind:value={editingContent} 
-            placeholder={t('skillList.contentPlaceholder')}
-          ></textarea>
-          <div class="bds-editor-actions">
-            <button type="button" class="bds-btn-outlined" onclick={cancelEdit}>{t('skillList.cancel')}</button>
-            <button type="button" class="bds-btn" onclick={saveEdit}>{t('skillList.save')}</button>
-          </div>
+  <!-- Skills List -->
+  <div class="bds-items-list">
+    {#if skills.length === 0}
+      <div class="bds-empty-state">
+        <div class="bds-empty-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
+          </svg>
         </div>
-      {:else}
-        <div class="bds-skill-item">
-          <label>
-            <input
-              type="checkbox"
-              checked={skill.active}
-              onchange={(e) => toggleSkill(skill.id, e.target.checked)}
-            />
-            <div style="display: flex; flex-direction: column; overflow: hidden;">
-              <span style="font-weight: 500; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{skill.name}</span>
-              {#if skill.usage}
-                <span style="font-size: 10px; opacity: 0.6; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
-                  {skill.usage.length > 50 ? skill.usage.slice(0, 50) + "..." : skill.usage}
-                </span>
-              {/if}
+        <h4 class="bds-empty-title">{t('skillList.empty')}</h4>
+        <p class="bds-empty-desc">Upload a <code>.md</code> file or import from a GitHub README to inject custom behavior into DeepSeek.</p>
+        <button type="button" class="bds-action-btn bds-action-btn-outline" onclick={triggerImport}>
+          {t('skillList.uploadLabel')}
+        </button>
+      </div>
+    {:else}
+      {#each skills as skill (skill.id)}
+        {#if editingId === skill.id}
+          <!-- Inline Editor Card -->
+          <div class="bds-editor-card">
+            <div class="bds-editor-header">
+              <span class="bds-editor-title">Editing Skill</span>
+              <span class="bds-editor-chip">{editingContent.length} chars</span>
             </div>
-          </label>
-          <div style="display: flex; gap: 6px;">
-            <button type="button" class="bds-btn-outlined" style="font-size: 11px; padding: 4px 8px;" onclick={() => startEdit(skill)}>
-              {t('skillList.edit')}
-            </button>
-            <button type="button" class="bds-btn-danger" onclick={() => deleteSkill(skill.id)}>
-              {t('skillList.delete')}
-            </button>
+            <div class="bds-editor-fields">
+              <div class="bds-editor-row">
+                <input
+                  class="bds-input"
+                  bind:value={editingName}
+                  placeholder={t('skillList.namePlaceholder')}
+                />
+                <input
+                  class="bds-input"
+                  bind:value={editingUsage}
+                  placeholder={t('skillList.usagePlaceholder')}
+                />
+              </div>
+              <textarea
+                class="bds-input bds-editor-textarea"
+                bind:value={editingContent}
+                placeholder={t('skillList.contentPlaceholder')}
+              ></textarea>
+            </div>
+            <div class="bds-editor-actions">
+              <button type="button" class="bds-btn-ghost" onclick={cancelEdit}>
+                {t('skillList.cancel')}
+              </button>
+              <button type="button" class="bds-action-btn bds-action-btn-primary" onclick={saveEdit}>
+                {t('skillList.save')}
+              </button>
+            </div>
           </div>
-        </div>
-      {/if}
-    {/each}
-  {/if}
+        {:else}
+          <!-- Skill Card -->
+          <div class="bds-skill-card" class:bds-skill-inactive={!skill.active}>
+            <div class="bds-skill-header-row">
+              <div class="bds-skill-title-group">
+                <label class="bds-switch bds-switch-sm" title="Toggle active status">
+                  <input
+                    type="checkbox"
+                    checked={skill.active}
+                    onchange={(e) => toggleSkill(skill.id, e.target.checked)}
+                  />
+                  <span class="bds-switch-track"></span>
+                </label>
+                <div class="bds-skill-info">
+                  <span class="bds-skill-name">{skill.name}</span>
+                  {#if skill.usage}
+                    <span class="bds-skill-tag" title={skill.usage}>
+                      🏷️ {skill.usage.length > 40 ? skill.usage.slice(0, 40) + "..." : skill.usage}
+                    </span>
+                  {/if}
+                </div>
+              </div>
+
+              <div class="bds-skill-actions">
+                <span class="bds-badge-status" class:bds-badge-active={skill.active}>
+                  {skill.active ? "Active" : "Off"}
+                </span>
+
+                <button
+                  type="button"
+                  class="bds-icon-btn"
+                  onclick={() => startEdit(skill)}
+                  title={t('skillList.edit')}
+                  aria-label={t('skillList.edit')}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  class="bds-icon-btn bds-icon-btn-danger"
+                  onclick={() => deleteSkill(skill.id)}
+                  title={t('skillList.delete')}
+                  aria-label={t('skillList.delete')}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        {/if}
+      {/each}
+    {/if}
+  </div>
 </div>

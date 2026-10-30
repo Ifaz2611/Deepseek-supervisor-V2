@@ -2,37 +2,51 @@
   import appState from "../state.js";
   import { normalizeMemories, saveMemoriesToStorage, deleteSingleMemory } from "../storage.js";
   import { pushConfigToPage } from "../bridge.js";
-  import { onMount } from "svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import MemoryImportModal from "./MemoryImport.svelte";
 
   let entries = $state(
-    Object.entries(appState.memories).sort((a, b) => a[0].localeCompare(b[0]))
+    Object.entries(appState.memories || {}).sort((a, b) => a[0].localeCompare(b[0]))
   );
 
-  const DISPLAY_LIMIT = 5;
+  let searchQuery = $state("");
+  let filterImportance = $state("all"); // 'all' | 'always' | 'called'
+  let copiedKey = $state(null);
   let fileInput = $state(null);
   let showMemoryImport = $state(false);
-  let showPopup = $state(false);
-  let confirmActive = $state(false);
-  let popupRef = $state(null);
   let editingKey = $state(null);
   let editingValue = $state("");
   let editingImportance = $state("called");
 
   export function refresh() {
-    entries = Object.entries(appState.memories).sort((a, b) =>
+    entries = Object.entries(appState.memories || {}).sort((a, b) =>
       a[0].localeCompare(b[0])
     );
   }
 
+  let countAll = $derived(entries.length);
+  let countAlways = $derived(entries.filter(([_, item]) => item.importance === "always").length);
+  let countCalled = $derived(entries.filter(([_, item]) => (item.importance || "called") === "called").length);
+
+  let filteredEntries = $derived(
+    entries.filter(([key, item]) => {
+      const importance = (item.importance || "called").toLowerCase();
+      if (filterImportance !== "all" && importance !== filterImportance) {
+        return false;
+      }
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      return key.toLowerCase().includes(q) || String(item.value || "").toLowerCase().includes(q);
+    })
+  );
+
   function exportMemories() {
-    const data = JSON.stringify(appState.memories, null, 2);
+    const data = JSON.stringify(appState.memories || {}, null, 2);
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "bds_memories.json";
+    a.download = `bds_memories_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -42,7 +56,7 @@
   }
 
   async function handleImport(event) {
-    const file = event.target.files[0];
+    const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -52,12 +66,11 @@
         const normalized = normalizeMemories(raw);
         if (Object.keys(normalized).length === 0) throw new Error("empty");
 
-        // Merge into existing memories and persist
         const merged = { ...appState.memories, ...normalized };
         const saved = await saveMemoriesToStorage(merged);
         if (!saved) throw new Error("save failed");
         appState.memories = merged;
-        entries = Object.entries(merged).sort((a, b) => a[0].localeCompare(b[0]));
+        refresh();
         pushConfigToPage();
 
         if (appState.ui) {
@@ -73,18 +86,25 @@
     reader.readAsText(file);
   }
 
+  async function copyValue(key, val) {
+    try {
+      await navigator.clipboard.writeText(val);
+      copiedKey = key;
+      setTimeout(() => {
+        if (copiedKey === key) copiedKey = null;
+      }, 1600);
+    } catch (e) {
+      console.error("Copy failed", e);
+    }
+  }
+
   async function deleteMemory(key) {
     if (!appState.settings?.skipDeletionConfirmation) {
-      confirmActive = true;
-      try {
-        if (!window.confirm(`Delete memory "${key}"?`)) return;
-      } finally {
-        confirmActive = false;
-      }
+      if (!window.confirm(`Delete memory fact "${key}"?`)) return;
     }
     delete appState.memories[key];
     await deleteSingleMemory(key);
-    entries = Object.entries(appState.memories).sort((a, b) => a[0].localeCompare(b[0]));
+    refresh();
     pushConfigToPage();
     if (appState.ui) {
       appState.ui.showToast(t('memoryList.deleted', { key }));
@@ -93,8 +113,8 @@
 
   function startEdit(key, item) {
     editingKey = key;
-    editingValue = item.value;
-    editingImportance = item.importance;
+    editingValue = item.value || "";
+    editingImportance = item.importance || "called";
   }
 
   function cancelEdit() {
@@ -107,14 +127,13 @@
     if (!editingKey || !editingValue.trim()) return;
     const entry = appState.memories[editingKey];
     if (!entry) {
-      // The entry may have been removed in another tab while the modal was open.
       cancelEdit();
       return;
     }
     entry.value = editingValue.trim();
     entry.importance = editingImportance;
     await saveMemoriesToStorage(appState.memories);
-    entries = Object.entries(appState.memories).sort((a, b) => a[0].localeCompare(b[0]));
+    refresh();
     pushConfigToPage();
     if (appState.ui) {
       appState.ui.showToast(t('memoryList.saved', { key: editingKey }));
@@ -122,162 +141,241 @@
     cancelEdit();
   }
 
-  function closePopup() {
-    showPopup = false;
-  }
-
   function handleKeydown(e) {
-    if (e.key === "Escape" && !confirmActive && !editingKey) showPopup = false;
-  }
-
-  onMount(() => {
-    function handleClick(e) {
-      if (showPopup && !confirmActive && !editingKey && popupRef && !popupRef.contains(e.target)) {
-        showPopup = false;
-      }
+    if (e.key === "Escape" && editingKey) {
+      cancelEdit();
     }
-    window.addEventListener("click", handleClick, true);
-    return () => window.removeEventListener("click", handleClick, true);
-  });
+  }
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="bds-section-title">
-  <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-    <div style="display: flex; align-items: center;">
-      <span class="bds-icon-inline">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M11.0307 5.46369C11.0305 3.78995 9.6734 2.43357 7.99961 2.43357C6.32601 2.43379 4.96972 3.79009 4.96949 5.46369C4.96949 7.13748 6.32587 8.49455 7.99961 8.49477C9.67354 8.49477 11.0307 7.13762 11.0307 5.46369ZM12.3163 5.46369C12.3163 7.84777 10.3837 9.78042 7.99961 9.78042C5.61572 9.7802 3.68288 7.84763 3.68288 5.46369C3.6831 3.07993 5.61586 1.14718 7.99961 1.14695C10.3836 1.14695 12.3161 3.0798 12.3163 5.46369Z" fill="currentColor"></path>
-          <path d="M8.00002 10.3316C11.7343 10.3316 14.1864 11.8997 15.0387 14.4445L14.4292 14.6483L13.8197 14.8531C13.1955 12.9893 11.3673 11.6182 8.00002 11.6182C4.63277 11.6182 2.80455 12.9893 2.18031 14.8531L1.5708 14.6483L0.961304 14.4445C1.81368 11.8997 4.26579 10.3316 8.00002 10.3316Z" fill="currentColor"></path>
+<div class="bds-memory-container">
+  <!-- Top Bar: Title & Actions -->
+  <div class="bds-memory-topbar">
+    <div class="bds-memory-title-group">
+      <div class="bds-memory-icon-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 6v6l4 2"></path>
         </svg>
-      </span>
-      {t('memoryList.title')}
+      </div>
+      <div>
+        <h3 class="bds-section-heading">{t('memoryList.title')}</h3>
+        <p class="bds-section-sub">Autonomous facts remembered across conversations</p>
+      </div>
     </div>
-    
-    <div style="display: flex; gap: 6px;">
-      <button type="button" class="bds-btn-outlined" onclick={exportMemories}>
-        {t('memoryList.export')}
+
+    <div class="bds-memory-top-actions">
+      <button type="button" class="bds-btn-ghost-sm" onclick={exportMemories} title="Export memories as JSON">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>{t('memoryList.export')}</span>
       </button>
-      <button type="button" class="bds-btn-outlined" onclick={triggerImport}>
-        {t('memoryList.import')}
+
+      <button type="button" class="bds-btn-ghost-sm" onclick={triggerImport} title="Import memories from JSON file">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <span>{t('memoryList.import')}</span>
       </button>
-      <input 
+
+      <button type="button" class="bds-btn-scan-sm" onclick={() => showMemoryImport = true} title="Scan active DeepSeek chat for memory facts">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        <span>Scan Chat</span>
+      </button>
+
+      <input
         id="bds-memory-upload"
-        type="file" 
-        accept=".json" 
-        style="display: none;" 
-        bind:this={fileInput} 
+        type="file"
+        accept=".json"
+        style="display: none;"
+        bind:this={fileInput}
         onchange={handleImport}
       />
     </div>
   </div>
-</div>
 
-<div id="bds-memory-list" class="bds-list">
-  {#if entries.length === 0}
-    <p class="bds-empty">{t('memoryList.empty')}</p>
-  {:else}
-    {#each entries.slice(0, DISPLAY_LIMIT) as [key, item] (key)}
-      <div class="bds-memory-item">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
-          <div style="display: grid; gap: 4px; flex: 1; min-width: 0;">
-            <strong>{key}</strong>
-            <span>{item.value}</span>
-            <em>{item.importance}</em>
-          </div>
-          <div style="display: flex; gap: 4px; align-items: flex-start;">
-            <button type="button" class="bds-btn-outlined bds-btn-xs" onclick={() => startEdit(key, item)}>
-              {t('memoryList.edit')}
-            </button>
-            <button type="button" class="bds-btn-danger" onclick={() => deleteMemory(key)}>
-              {t('memoryList.delete')}
-            </button>
-          </div>
-        </div>
-      </div>
-    {/each}
+  <!-- Search and Filter Bar -->
+  <div class="bds-search-filter-row">
+    <div class="bds-search-bar">
+      <svg class="bds-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        class="bds-search-input"
+        placeholder="Search facts by keyword or key..."
+        bind:value={searchQuery}
+      />
+      {#if searchQuery}
+        <button type="button" class="bds-search-clear" onclick={() => searchQuery = ""} aria-label="Clear search">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      {/if}
+    </div>
 
-    {#if entries.length > DISPLAY_LIMIT}
+    <!-- Filter Pills -->
+    <div class="bds-filter-pills">
       <button
         type="button"
-        class="bds-memory-more-badge"
-        onclick={() => showPopup = true}
+        class="bds-pill-btn"
+        class:active={filterImportance === "all"}
+        onclick={() => filterImportance = "all"}
       >
-        {t('memoryList.more', { count: entries.length - DISPLAY_LIMIT })}
+        <span>All</span>
+        <span class="bds-pill-count">{countAll}</span>
       </button>
-    {/if}
-  {/if}
-</div>
 
-{#if showPopup}
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="bds-memory-popup-backdrop" onclick={closePopup} role="presentation">
-    <div
-      bind:this={popupRef}
-      class="bds-memory-popup"
-      onclick={(e) => e.stopPropagation()}
-      role="dialog"
-      aria-modal="true"
-      tabindex="-1"
-    >
-      <div class="bds-memory-popup-header">
-        <span class="bds-memory-popup-title">{t('memoryList.title')}<span class="bds-memory-popup-count"> ({entries.length})</span></span>
-        <div class="bds-memory-popup-actions">
-          <button type="button" class="bds-btn-outlined bds-btn-xs" onclick={exportMemories}>
-            {t('memoryList.export')}
-          </button>
-          <button type="button" class="bds-btn-outlined bds-btn-xs" onclick={triggerImport}>
-            {t('memoryList.import')}
-          </button>
-          <button
-            type="button"
-            class="bds-memory-popup-close"
-            onclick={closePopup}
-            aria-label={t('common.close')}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div class="bds-memory-popup-body">
-        {#if entries.length === 0}
-          <p class="bds-memory-popup-empty">{t('memoryList.empty')}</p>
-        {:else}
-          {#each entries as [key, item] (key)}
-            <div class="bds-memory-popup-item">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
-                <div style="display: grid; gap: 4px; flex: 1; min-width: 0;">
-                  <strong>{key}</strong>
-                  <span>{item.value}</span>
-                  <em>{item.importance}</em>
-                </div>
-                <div style="display: flex; gap: 4px; align-items: flex-start;">
-                  <button type="button" class="bds-btn-outlined bds-btn-xs" onclick={() => startEdit(key, item)}>
-                    {t('memoryList.edit')}
-                  </button>
-                  <button type="button" class="bds-btn-danger" onclick={() => deleteMemory(key)}>
-                    {t('memoryList.delete')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          {/each}
-        {/if}
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <div class="bds-memory-popup-import-label" onclick={() => { closePopup(); showMemoryImport = true; }}>
-          <span>{t('memoryImport.title')}</span>
-        </div>
-      </div>
+      <button
+        type="button"
+        class="bds-pill-btn"
+        class:active={filterImportance === "always"}
+        onclick={() => filterImportance = "always"}
+      >
+        <span class="bds-pill-dot dot-always"></span>
+        <span>Always</span>
+        <span class="bds-pill-count">{countAlways}</span>
+      </button>
+
+      <button
+        type="button"
+        class="bds-pill-btn"
+        class:active={filterImportance === "called"}
+        onclick={() => filterImportance = "called"}
+      >
+        <span class="bds-pill-dot dot-called"></span>
+        <span>Called</span>
+        <span class="bds-pill-count">{countCalled}</span>
+      </button>
     </div>
   </div>
-{/if}
 
+  <!-- Memory List Cards -->
+  <div class="bds-memory-grid">
+    {#if filteredEntries.length === 0}
+      <div class="bds-empty-state">
+        <div class="bds-empty-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        {#if searchQuery || filterImportance !== "all"}
+          <p class="bds-empty-title">No matching memories found</p>
+          <p class="bds-empty-desc">Try clearing your search query or changing filters.</p>
+          <button type="button" class="bds-btn-outlined bds-btn-sm" onclick={() => { searchQuery = ""; filterImportance = "all"; }}>
+            Reset Filters
+          </button>
+        {:else}
+          <p class="bds-empty-title">No memories stored yet</p>
+          <p class="bds-empty-desc">
+            DeepSeek will automatically remember important facts during your chat, or you can import existing memories.
+          </p>
+          <button type="button" class="bds-btn-primary bds-btn-sm" onclick={() => showMemoryImport = true}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            Scan Chat for Memories
+          </button>
+        {/if}
+      </div>
+    {:else}
+      {#each filteredEntries as [key, item] (key)}
+        <div class="bds-memory-card">
+          <!-- Card Header: Key Chip + Importance Badge + Actions -->
+          <div class="bds-memory-card-top">
+            <div class="bds-key-info">
+              <span class="bds-key-chip" title={key}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                </svg>
+                <code>{key}</code>
+              </span>
+
+              <span class="bds-importance-badge" class:always={item.importance === "always"} class:called={(item.importance || "called") === "called"}>
+                {#if item.importance === "always"}
+                  <span class="bds-badge-pulse"></span>
+                  ALWAYS
+                {:else}
+                  CALLED
+                {/if}
+              </span>
+            </div>
+
+            <div class="bds-memory-card-actions">
+              <!-- Quick Copy Value -->
+              <button
+                type="button"
+                class="bds-card-btn"
+                class:copied={copiedKey === key}
+                onclick={() => copyValue(key, item.value)}
+                title="Copy fact value to clipboard"
+              >
+                {#if copiedKey === key}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span class="bds-btn-text-copied">Copied!</span>
+                {:else}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                {/if}
+              </button>
+
+              <!-- Edit -->
+              <button
+                type="button"
+                class="bds-card-btn"
+                onclick={() => startEdit(key, item)}
+                title="Edit this memory fact"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+
+              <!-- Delete -->
+              <button
+                type="button"
+                class="bds-card-btn danger"
+                onclick={() => deleteMemory(key)}
+                title="Delete this memory fact"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card Content -->
+          <div class="bds-memory-value-box">
+            <p class="bds-memory-text">{item.value}</p>
+          </div>
+        </div>
+      {/each}
+    {/if}
+  </div>
+</div>
+
+<!-- Edit Memory Modal Overlay -->
 {#if editingKey}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -290,50 +388,78 @@
       tabindex="-1"
     >
       <div class="bds-edit-header">
-        <span>{t('memoryList.editTitle')}</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="bds-edit-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </div>
+          <span class="bds-edit-title">{t('memoryList.editTitle')}</span>
+        </div>
         <button
           type="button"
           class="bds-edit-close"
           onclick={cancelEdit}
           aria-label={t('common.close')}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>
+
       <div class="bds-edit-body">
         <div class="bds-edit-field">
-          <label class="bds-edit-label" for="bds-edit-key">Key</label>
-          <input id="bds-edit-key" class="bds-edit-input" value={editingKey} disabled />
+          <label class="bds-edit-label" for="bds-edit-key">
+            <span>Key identifier</span>
+            <span class="bds-field-tag">Immutable</span>
+          </label>
+          <input id="bds-edit-key" class="bds-edit-input locked" value={editingKey} disabled />
         </div>
+
         <div class="bds-edit-field">
-          <label class="bds-edit-label" for="bds-edit-value">Value</label>
-          <textarea id="bds-edit-value" class="bds-edit-textarea" bind:value={editingValue}></textarea>
-        </div>
-        <div class="bds-edit-field">
-          <label class="bds-edit-label" for="bds-edit-importance">Importance</label>
+          <label class="bds-edit-label" for="bds-edit-importance">Importance Strategy</label>
           <select id="bds-edit-importance" class="bds-edit-select" bind:value={editingImportance}>
-            <option value="always">Always</option>
-            <option value="called">Called</option>
+            <option value="always">Always Injected (Every user prompt)</option>
+            <option value="called">On Demand (Injected only when DeepSeek requests it)</option>
           </select>
         </div>
+
+        <div class="bds-edit-field">
+          <label class="bds-edit-label" for="bds-edit-value">Memory Fact Content</label>
+          <textarea
+            id="bds-edit-value"
+            class="bds-edit-textarea"
+            bind:value={editingValue}
+            placeholder="Fact description or remembered user preference..."
+            rows="4"
+          ></textarea>
+        </div>
       </div>
+
       <div class="bds-edit-footer">
         <button type="button" class="bds-btn-outlined" onclick={cancelEdit}>{t('common.cancel')}</button>
-        <button type="button" class="bds-btn" onclick={saveEdit}>{t('common.save')}</button>
+        <button type="button" class="bds-btn-primary" onclick={saveEdit}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          {t('common.save')}
+        </button>
       </div>
     </div>
   </div>
 {/if}
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="bds-memory-import-label" onclick={() => showMemoryImport = true}>
-  <span>{t('memoryImport.title')}</span>
-</div>
-
+<!-- Chat History Memory Import Modal -->
 {#if showMemoryImport}
-  <MemoryImportModal onclose={() => showMemoryImport = false} />
+  <MemoryImportModal
+    onclose={() => {
+      showMemoryImport = false;
+      refresh();
+    }}
+  />
 {/if}

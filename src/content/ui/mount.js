@@ -50,7 +50,21 @@ function ensureFloatingButton() {
   btn.type = "button";
   btn.title = "Open DeepSeek Supervisor — Memory & Skills (Alt+M)";
   btn.setAttribute("aria-label", "Open DeepSeek Supervisor");
-  btn.innerHTML = '<span class="bds-toggle-full">🧠 Memory & Skills</span><span class="bds-toggle-short">🧠</span>';
+  btn.innerHTML = `
+    <span class="bds-toggle-pill-inner">
+      <span class="bds-toggle-icon-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2a5 5 0 0 0-5 5v1a4 4 0 0 0-3 3.86 4.5 4.5 0 0 0 2 3.86V17a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-1.28a4.5 4.5 0 0 0 2-3.86 4 4 0 0 0-3-3.86V7a5 5 0 0 0-5-5z"></path>
+          <line x1="12" y1="2" x2="12" y2="8"></line>
+          <line x1="9" y1="12" x2="15" y2="12"></line>
+          <line x1="9" y1="16" x2="15" y2="16"></line>
+        </svg>
+        <span class="bds-toggle-pulse-dot" title="Memory active"></span>
+      </span>
+      <span class="bds-toggle-label-full">Memory & Skills</span>
+      <span class="bds-toggle-kbd-badge">Alt+M</span>
+    </span>
+  `;
   btn.addEventListener("click", () => {
     window.dispatchEvent(new CustomEvent("dsm:open"));
   });
