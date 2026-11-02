@@ -78,26 +78,47 @@ npm run version:sync -- --check  # verify everything is in sync
 
 ## Creating a release
 
-The zip, checksum, and GitHub Release are produced automatically — pushing a version tag is all it takes:
+Releases are now **fully automatic** on every push to main:
 
 1. Work through the [release checklist](docs/RELEASE_CHECKLIST.md) (also available as a GitHub issue template — *New issue → Release checklist*).
-2. Bump the version and update the changelog:
+2. Make your changes and commit them to main:
+   ```bash
+   git add .
+   git commit -m "feat: add new feature"
+   git push origin main
+   ```
+3. The Auto Release workflow (`.github/workflows/auto-release.yml`) will:
+   - Automatically bump the version (patch increment)
+   - Commit the version change to main
+   - Create a version tag (e.g. `v1.0.2`)
+   - Trigger the Release workflow
+4. The Release workflow (`.github/workflows/release.yml`) will:
+   - Build the extension
+   - Verify the tag matches `package.json`
+   - Verify all bundle files exist
+   - Publish a **GitHub Release** with the zip, its SHA-256 checksum, and auto-generated release notes
+
+### Manual releases (if you need control)
+
+If you need to create a specific version (e.g., `v1.1.0` for a minor feature release), you can still do it manually:
+
+1. Bump the version and update the changelog:
    ```bash
    npm run version:set -- X.Y.Z
    # add a X.Y.Z section to CHANGELOG.md
    ```
-3. Build and test locally:
+2. Build and test locally:
    ```bash
    npm run release        # → dist/ + releases/deepseek-supervisor-v2-vX.Y.Z.zip + .sha256
    ```
    Load the unzipped release in Chrome and smoke-test memory, skills, and settings before tagging.
-4. Commit and tag:
+3. Commit and tag:
    ```bash
    git commit -am "chore(release): vX.Y.Z"
    git tag vX.Y.Z && git push origin main --follow-tags
    ```
-5. CI (`.github/workflows/release.yml`) then builds the extension, verifies the tag matches `package.json`, verifies all bundle files exist, and publishes a **GitHub Release** with the zip, its SHA-256 checksum, and auto-generated release notes (categorized via `.github/release.yml`). Edit the generated notes to add highlights, installation steps, and known issues.
-6. Download the finished asset from the release page and re-verify the checksum before announcing.
+4. CI will create the GitHub Release automatically. Edit the generated notes to add highlights, installation steps, and known issues.
+5. Download the finished asset from the release page and re-verify the checksum before announcing.
 
 ### Testing the pipeline without publishing
 

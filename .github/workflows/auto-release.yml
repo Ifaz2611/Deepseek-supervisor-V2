@@ -1,0 +1,68 @@
+name: Auto Release
+
+# Automatically creates a new release on every push to main:
+# 1. Bumps version (patch)
+# 2. Commits the version change
+# 3. Creates a tag
+# 4. Triggers the Release workflow to build and publish
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  auto-release:
+    name: Bump version & create release
+    runs-on: ubuntu-latest
+    # Skip if this is a commit by the release workflow (avoid loop)
+    if: "!startsWith(github.event.head_commit.message, 'chore(auto-release): bump version')"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Bump version (patch)
+        run: npm run version:set -- patch
+
+      - name: Get new version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "New version: v$VERSION"
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json static/manifest.json
+          git commit -m "chore(auto-release): bump version to v${{ steps.version.outputs.version }}"
+
+      - name: Push version bump
+        run: git push origin main
+
+      - name: Create tag
+        run: |
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
+
+      - name: Wait for release workflow
+        run: |
+          echo "Tag pushed. The Release workflow will now trigger automatically."
+          echo "Visit https://github.com/${{ github.repository }}/actions to monitor."
