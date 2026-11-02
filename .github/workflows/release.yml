@@ -10,6 +10,11 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.0.2)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -21,6 +26,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', github.event.inputs.tag) || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -31,16 +39,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Get tag name
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Using tag: $TAG"
+
       - name: Verify tag matches package version
-        if: startsWith(github.ref, 'refs/tags/')
         run: |
           VERSION="v$(node -p "require('./package.json').version")"
-          if [ "$VERSION" != "$GITHUB_REF_NAME" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match version $VERSION from package.json."
+          if [ "$VERSION" != "${{ steps.tag.outputs.tag }}" ]; then
+            echo "::error::Tag ${{ steps.tag.outputs.tag }} does not match version $VERSION from package.json."
             echo "::error::Run 'npm run version:set -- <version>' and re-tag."
             exit 1
           fi
-          echo "Tag $GITHUB_REF_NAME matches package.json"
+          echo "Tag ${{ steps.tag.outputs.tag }} matches package.json"
 
       - name: Build & package (zip + checksum)
         run: npm run release
@@ -70,20 +88,20 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
           ASSETS="releases/*.zip releases/*.sha256"
-          if gh release view "$GITHUB_REF_NAME" --repo "$REPO" > /dev/null 2>&1; then
-            echo "Release $GITHUB_REF_NAME exists — uploading assets (clobber)."
-            gh release upload "$GITHUB_REF_NAME" --repo "$REPO" --clobber $ASSETS
+          TAG="${{ steps.tag.outputs.tag }}"
+          if gh release view "$TAG" --repo "$REPO" > /dev/null 2>&1; then
+            echo "Release $TAG exists — uploading assets (clobber)."
+            gh release upload "$TAG" --repo "$REPO" --clobber $ASSETS
           else
-            echo "Creating release $GITHUB_REF_NAME."
-            gh release create "$GITHUB_REF_NAME" \
+            echo "Creating release $TAG."
+            gh release create "$TAG" \
               --repo "$REPO" \
-              --title "DeepSeek Supervisor $GITHUB_REF_NAME" \
+              --title "DeepSeek Supervisor $TAG" \
               --generate-notes \
               --verify-tag \
               $ASSETS

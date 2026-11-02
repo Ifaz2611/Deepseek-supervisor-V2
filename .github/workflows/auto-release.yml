@@ -62,7 +62,7 @@ jobs:
           git tag "v${{ steps.version.outputs.version }}"
           git push origin "v${{ steps.version.outputs.version }}"
 
-      - name: Wait for release workflow
+      - name: Trigger Release workflow
         run: |
-          echo "Tag pushed. The Release workflow will now trigger automatically."
-          echo "Visit https://github.com/${{ github.repository }}/actions to monitor."
+          echo "Tag pushed. Manually triggering Release workflow."
+          gh workflow run release.yml -f tag="${{ steps.version.outputs.version }}"
