@@ -1,4 +1,4 @@
-# Installing DeepSeek Supervisor V2
+# Installing DeepSeek Supervisor V2.1
 
 A step-by-step guide for installing the extension from pre-built release zips — no Node.js or programming knowledge required.
 
