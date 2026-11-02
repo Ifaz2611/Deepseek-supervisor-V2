@@ -2,6 +2,7 @@ node_modules/
 jspm_packages/
 dist/
 dist.zip
+releases/
 *.local
 logs
 *.log

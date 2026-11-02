@@ -1,11 +1,23 @@
 {
   "name": "deepseek-supervisor-V2",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ifaz2611/Deepseek-supervisor-V2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ifaz2611/Deepseek-supervisor-V2/issues"
+  },
+  "homepage": "https://github.com/Ifaz2611/Deepseek-supervisor-V2#readme",
   "scripts": {
     "dev": "node build.js",
-    "build": "node build.js"
+    "build": "node build.js",
+    "package": "node scripts/package.js",
+    "release": "node scripts/release.js",
+    "version:set": "node scripts/version.js",
+    "version:sync": "node scripts/sync-version.js"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",

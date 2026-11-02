@@ -1,0 +1,90 @@
+name: Release
+
+# Builds the extension and publishes a GitHub Release with the zip + SHA-256
+# checksum whenever a version tag (e.g. v1.0.1) is pushed.
+# Can also be run manually (Actions tab → Release → Run workflow) as a
+# build-only dry run — assets are attached to the workflow run instead.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    name: Build & publish extension zip
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          VERSION="v$(node -p "require('./package.json').version")"
+          if [ "$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match version $VERSION from package.json."
+            echo "::error::Run 'npm run version:set -- <version>' and re-tag."
+            exit 1
+          fi
+          echo "Tag $GITHUB_REF_NAME matches package.json"
+
+      - name: Build & package (zip + checksum)
+        run: npm run release
+
+      - name: Verify bundle contents
+        run: |
+          echo "dist/ contents:"
+          ls -la dist
+          echo "releases/ contents:"
+          ls -la releases
+          test -f dist/manifest.json
+          test -f dist/content.js
+          test -f dist/content.css
+          test -f dist/background.js
+          test -f dist/injected.js
+          test -f dist/icon16.png
+          test -f dist/icon48.png
+          test -f dist/icon128.png
+
+      - name: Upload build artifacts (always, for inspection)
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepseek-supervisor-release-assets
+          path: |
+            releases/*.zip
+            releases/*.sha256
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          ASSETS="releases/*.zip releases/*.sha256"
+          if gh release view "$GITHUB_REF_NAME" --repo "$REPO" > /dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME exists — uploading assets (clobber)."
+            gh release upload "$GITHUB_REF_NAME" --repo "$REPO" --clobber $ASSETS
+          else
+            echo "Creating release $GITHUB_REF_NAME."
+            gh release create "$GITHUB_REF_NAME" \
+              --repo "$REPO" \
+              --title "DeepSeek Supervisor $GITHUB_REF_NAME" \
+              --generate-notes \
+              --verify-tag \
+              $ASSETS
+          fi

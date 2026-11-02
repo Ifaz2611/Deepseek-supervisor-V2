@@ -2,6 +2,8 @@
 
 <div align="center">
 
+[![Latest Release](https://img.shields.io/github/v/release/Ifaz2611/Deepseek-supervisor-V2?label=Release&logo=github)](https://github.com/Ifaz2611/Deepseek-supervisor-V2/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Ifaz2611/Deepseek-supervisor-V2/total?label=Downloads&logo=googlechrome&logoColor=white)](https://github.com/Ifaz2611/Deepseek-supervisor-V2/releases/latest)
 ![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-blue?logo=googlechrome&logoColor=white)
 ![Manifest](https://img.shields.io/badge/Manifest-V3-green)
 ![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte&logoColor=white)
@@ -10,11 +12,29 @@
 
 **Persistent memory + custom skills for [chat.deepseek.com](https://chat.deepseek.com) — all data stays on your device.**
 
-[Features](#features) • [Installation](#installation) • [How It Works](#how-it-works) • [Usage](#usage) • [Privacy](#privacy--security) • [Development](#development) • [Troubleshooting](#troubleshooting)
+[Download](#-download--install) • [Features](#features) • [How It Works](#how-it-works) • [Usage](#usage) • [Privacy](#privacy--security) • [For Developers](#for-developers) • [Troubleshooting](#troubleshooting)
 
 </div>
 
 > **Disclaimer:** This is an unofficial community extension. Not affiliated with, endorsed by, or connected to DeepSeek / DeepSeek AI.
+
+---
+
+## 📥 Download & Install
+
+No build tools needed — install the pre-built extension in under two minutes. Full guide: **[INSTALL.md](INSTALL.md)**.
+
+1. **Download** — grab `deepseek-supervisor-v2-vX.Y.Z.zip` from the **[Latest Release](https://github.com/Ifaz2611/Deepseek-supervisor-V2/releases/latest)** page.
+2. **Verify (optional but recommended)** — check the SHA-256 checksum against the `.sha256` file in the same release ([how](INSTALL.md#verifying-the-download-checksums)).
+3. **Extract** the zip to a permanent folder.
+4. **Load it:**
+   - Open `chrome://extensions` (Edge: `edge://extensions`, Brave: `brave://extensions`)
+   - Enable **Developer mode**
+   - Click **Load unpacked** and select the extracted folder
+5. Open [chat.deepseek.com](https://chat.deepseek.com) — a **Memory & Skills** entry appears in DeepSeek's own menu.
+
+> 📜 What's new: [CHANGELOG.md](CHANGELOG.md) • 🛡 Checksums & security notes: [INSTALL.md](INSTALL.md) • 🌐 Landing page: https://ifaz2611.github.io/Deepseek-supervisor-V2/
+
 
 ---
 
@@ -44,24 +64,39 @@ Injected into DeepSeek's own dropdown (`Memory & Skills` entry next to "Get App"
 
 ---
 
-## Installation
+## For Developers
 
-### Prerequisites
-Node.js 18+ and Chrome / Chromium (Edge, Brave, etc.)
+### Local setup
+
+Prerequisites: Node.js 18+ and Chrome / Chromium (Edge, Brave, etc.)
 
 ```bash
 git clone https://github.com/Ifaz2611/Deepseek-supervisor-V2
 cd Deepseek-supervisor-V2
 npm install
-npm run build
+npm run release    # build + package + SHA-256 checksum
 ```
 
-`dist/` is the unpacked extension.
+`dist/` is the unpacked extension — load it via `chrome://extensions` → Developer mode → **Load unpacked**. After changes, rebuild and reload the extension.
 
-### Load in Chrome
-1. `chrome://extensions` → enable **Developer mode**
-2. **Load unpacked** → select `dist/`
-3. Open [chat.deepseek.com](https://chat.deepseek.com) — extension auto-activates
+### Scripts
+
+```bash
+npm run dev                    # build (same as build)
+npm run build                  # production build → dist/ + releases/*.zip
+npm run build -- --no-package  # build only, skip the zip step
+npm run package                # re-package existing dist/ → releases/
+npm run release                # full release: build + package + checksum
+npm run version:set -- 1.2.3   # set version (package.json, lockfile, manifest)
+npm run version:sync -- --check  # verify manifest ↔ package.json versions match
+```
+
+Every build self-checks: versions must match across `package.json`/`static/manifest.json`, and every file the manifest references must exist in `dist/` before the zip is created. Zips are **reproducible** — same source + version ⇒ identical SHA-256.
+
+### Releasing a new version
+
+Follow [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md) (also available as a GitHub issue template). In short: `npm run version:set -- X.Y.Z` → update [CHANGELOG.md](CHANGELOG.md) → `npm run release` → test in Chrome → commit, `git tag vX.Y.Z && git push origin main --follow-tags` → GitHub Actions publishes the Release with the zip + checksum automatically. Details in [contributing.md](contributing.md).
+
 
 ---
 
@@ -109,16 +144,8 @@ content (ISOLATED)  --dsm:cu (config)-->  injected (MAIN)  --fetch/XHR patch--> 
 
 ---
 
-## Development
+## Project Structure
 
-```bash
-npm run dev    # same as build (watches via Vite)
-npm run build  # production (3 bundles: content, background, injected + manifest + icons)
-```
-
-After changes, reload the extension in `chrome://extensions`.
-
-### Project Structure
 ```
 src/
   background/index.js        # SW: locale update + BDS_FETCH_SKILL_URL proxy
@@ -136,6 +163,9 @@ src/
   locales/*.json, styles/content.css, platform/globals-chrome.js
 static/manifest.json
 build.js, svelte.config.js, icon.svg
+scripts/                     # packaging & release tooling (zero-dependency zip, checksums, version sync)
+docs/                        # release checklist + GitHub Pages landing page (index.html)
+.github/workflows/release.yml  # CI: build → verify → publish GitHub Release on v* tags
 ```
 
 ### Tech Stack
@@ -155,17 +185,11 @@ Svelte 5 (runes `$state`/`$derived`/`$effect`/`$props`), Vite 6, Manifest V3, In
 
 ---
 
-## Known Fixes in This Release (v1.0.1)
+## Fixed in v1.0.1
 
-- `MemoryList.svelte:2` — added missing `import { pushConfigToPage } from "../bridge.js"` (ReferenceError on delete/save/import)
-- `scanner.js:14-15,60,80` — `TAG_REGEX` now allows attributes, `INJECTED_BLOCK_REGEX` covers `memory_write`, observer synced to `state.observer`, DOM writes wrapped in `withObserverPaused` to avoid loops
-- `indexeddb-storage.js:239` — `saveMemoriesBatch` is now sequential (no concurrent `get`/`put` race inside one transaction)
-- `storage.js:25` — `checkIDBAvailability` no longer double-resolves (clearTimeout on success/error)
-- `constants.js:5` — added `pendingMemoryImport` key
-- `content/index.js:10,34,52` — handles `bds_pending_memory_import` (auto-fills DeepSeek input after cross-AI import)
-- `MemoryList.svelte:44` — import now **merges** instead of replacing all memories
-- `build.js:102` — icon generation no longer fails the whole build if `sharp` errors
-- `svelte.config.js:3` — removed `css: "injected"` to let Vite extract `content.css` cleanly
+This release fixes the crashes and injection bugs listed in the [v1.0.1 changelog entry](CHANGELOG.md#101---2026-11-02) — highlights: missing `pushConfigToPage` import, memory-import merging, scanner regex/observer fixes, and clean `content.css` extraction. All fixes are included in the current release download.
+
+See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ---
 

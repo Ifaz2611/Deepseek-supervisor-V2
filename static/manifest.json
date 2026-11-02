@@ -1,23 +1,40 @@
 {
   "manifest_version": 3,
   "name": "DeepSeek Supervisor V2",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Chrome extension that enhances the DeepSeek chat experience by providing additional features and functionalities.",
-  "permissions": ["storage"],
-  "host_permissions": ["https://chat.deepseek.com/*", "https://*.deepseek.com/*"],
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://chat.deepseek.com/*",
+    "https://*.deepseek.com/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["https://chat.deepseek.com/*", "https://*.deepseek.com/*"],
-      "js": ["content.js"],
-      "css": ["content.css"],
+      "matches": [
+        "https://chat.deepseek.com/*",
+        "https://*.deepseek.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
       "run_at": "document_start",
       "all_frames": false
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["injected.js"],
-      "matches": ["https://chat.deepseek.com/*", "https://*.deepseek.com/*"]
+      "resources": [
+        "injected.js"
+      ],
+      "matches": [
+        "https://chat.deepseek.com/*",
+        "https://*.deepseek.com/*"
+      ]
     }
   ],
   "background": {

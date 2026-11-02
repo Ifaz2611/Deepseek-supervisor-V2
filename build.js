@@ -2,6 +2,11 @@
  * Vite build script for DeepSeek Memory (Chrome/Chromium only).
  *
  * Builds three bundles: content, background, and injected (MAIN world hook).
+ * On success it also:
+ *   1. Verifies package.json ↔ static/manifest.json versions are in sync.
+ *   2. Verifies dist/ contains every file the manifest references.
+ *   3. Packages dist/ into releases/deepseek-supervisor-v2-v<version>.zip.
+ *      (opt out with `node build.js --no-package`)
  */
 
 import { build } from "vite";
@@ -18,6 +23,8 @@ import {
   writeFileSync,
 } from "fs";
 import sharp from "sharp";
+import { verifyDist, packageDist } from "./scripts/package.js";
+import { assertVersionsInSync } from "./scripts/sync-version.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const distFolderName = "dist";
@@ -120,6 +127,9 @@ async function generateIcons(distDir) {
 }
 
 async function run() {
+  // Fail fast if the versions drift apart (they must match for distribution).
+  assertVersionsInSync();
+
   for (const config of builds) {
     await build({ ...config, configFile: false });
   }
@@ -130,7 +140,20 @@ async function run() {
 
   await generateIcons(distDir);
 
+  // Never ship (or zip) an incomplete dist/: every manifest-referenced file
+  // must exist — content.js, content.css, background.js, injected.js, icons.
+  verifyDist(distDir);
+
   console.log(`\nBuild complete: ${distFolderName}/`);
+
+  if (process.argv.includes("--no-package")) {
+    console.log("Skipping packaging (--no-package).");
+    return;
+  }
+
+  const zip = await packageDist({ distDir });
+  const zipMB = (statSync(zip.path).size / (1024 * 1024)).toFixed(2);
+  console.log(`Packaged: ${zip.path} (${zipMB} MB, ${zip.entries.length} files)`);
 }
 
 run().catch((err) => {

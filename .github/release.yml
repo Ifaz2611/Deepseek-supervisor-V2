@@ -1,0 +1,30 @@
+# Configuration for auto-generated release notes (--generate-notes).
+# Commits are grouped by the Conventional Commit prefixes used in this repo.
+changelog:
+  exclude:
+    authors:
+      - github-actions
+      - dependabot
+  categories:
+    - title: 🚀 Features
+      labels:
+        - feat
+        - feature
+        - enhancement
+    - title: 🐛 Bug Fixes
+      labels:
+        - fix
+        - bugfix
+    - title: 📝 Documentation
+      labels:
+        - docs
+        - documentation
+    - title: 🧰 Maintenance & Build
+      labels:
+        - chore
+        - build
+        - ci
+        - refactor
+    - title: Other Changes
+      labels:
+        - "*"
