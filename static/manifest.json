@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "DeepSeek Supervisor V2",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Chrome extension that enhances the DeepSeek chat experience by providing additional features and functionalities.",
   "permissions": [
     "storage"
